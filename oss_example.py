@@ -145,4 +145,30 @@ for i, result in enumerate(results["hits"]["hits"]):
     print(f"Result{i+1}: ID={id}, Score={score}")
 
 
+# look for matching id value
+query_body_match = {
+    "size": 3,  # Limits number of hits returned
+    "query": {"match": {"id": 2}}
+}
+results = client.search(
+    body=query_body_match,
+    index=INDEX_NAME,
+    _source="id",
+)
+print()
+print(results)
+
+query_body_nomatch = {
+    "size": 3,  # Limits number of hits returned
+    "query": {"match": {"id": 99}}
+}
+results = client.search(
+    body=query_body_nomatch,
+    index=INDEX_NAME,
+    _source="id",
+)
+print()
+print(results)
+
+
 client.indices.delete(index=INDEX_NAME)
