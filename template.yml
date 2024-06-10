@@ -119,7 +119,7 @@ Resources:
             Name:
               !Join
               - '-'
-              - - !Ref mainScrape
+              - - !Ref stackName
                 - 'schedule'
       LoggingConfig:
         LogFormat: Text
