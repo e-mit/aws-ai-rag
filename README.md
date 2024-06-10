@@ -2,6 +2,8 @@
 
 Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date news.
 
+**Incomplete**
+
 ## Architecture summary
 
 ### Main technologies/products used:
