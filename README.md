@@ -6,13 +6,13 @@ Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date new
 
 ### Main technologies/products used:
 - Amazon OpenSearch Service (free tier on t2.small.search with 10GB EBS storage)
-- AWS Bedrock generative AI and vector embedding models
+- AWS Bedrock generative AI and vector embedding models (Titan)
 - AWS Lambda, SQS, API Gateway, S3, EventBridge, CloudFormation
 
 
 ### Data ingestion pipeline
 
-1. A periodically triggered lambda function obtains the URLs of the ten "most read" news articles from the main BBC news website (https://www.bbc.co.uk/news)[https://www.bbc.co.uk/news] and places each URL as a message in a SQS queue.
+1. A periodically triggered lambda function obtains the URLs of the ten "most read" news articles from the main BBC news website [https://www.bbc.co.uk/news](https://www.bbc.co.uk/news) and places each URL as a message in a SQS queue.
 2. A second lambda removes URLs from the queue and does the following steps:
     - Check the OpenSearch vector database and discard the URL if it has already been processed
     - Extract the news article's full text and other information such as publication date, keywords, etc.
