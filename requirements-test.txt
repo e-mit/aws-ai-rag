@@ -1,3 +1,5 @@
 boto3-stubs
 types-requests
 types-beautifulsoup4
+requests_mock
+pytest
