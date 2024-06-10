@@ -1,19 +1,38 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Create an OpenSearchService
+Description: AWS AI RAG project
 Parameters:
-  ossDomainName:
-    Description: The OSS domain name
+  stackName:
+    Description: The stack or project name
     Type: String
     MinLength: 1
     MaxLength: 50
+  timePeriodValue:
+    Description: "The time period of the scheduled scrape event (without unit)"
+    Type: Number
+    MinValue: 1
+    MaxValue: 255
+  timePeriodUnit:
+    Description: "The unit for the time period of the scheduled event, e.g. 'minute'"
+    Type: String
+    MinLength: 1
+    MaxLength: 50
+  timeout:
+    Description: Timeout in seconds for the lambdas
+    Type: Number
+    MinValue: 1
+    Default: 180
 
 Resources:
 
   ossDomain:
     Type: AWS::OpenSearchService::Domain
     Properties:
-      DomainName: !Ref ossDomainName
+      DomainName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'oss-domain'
       EngineVersion: OpenSearch_2.13
       EBSOptions:
         EBSEnabled: true
@@ -30,4 +49,185 @@ Resources:
           Principal:
             AWS: "arn:aws:iam::637423608549:user/e"
           Action: 'es:*'
-          Resource: "arn:aws:es:eu-west-3:637423608549:domain/osstest1-domain/*"
+          Resource: !Sub ${ossDomain.Arn}/*
+
+  mainScrapeLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      RetentionInDays: 3
+      LogGroupName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'lambda-main-scrape-log'
+
+  accessPolicyToSQS:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Allow writing to SQS
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: 'sqs:SendMessage'
+            Resource: !Ref queueARN
+
+  mainScrape:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'lambda-main-scrape'
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      PackageType: Zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: main_scrape
+      Description: Do a periodic scrape of the main page
+      Timeout: !Ref timeout
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - !Ref accessPolicyToSQS
+      Layers:
+        - Ref: libsMainScrape
+      Events:
+        ScheduledEvent:
+          Type: ScheduleV2
+          Description: Repeating trigger for the Lambda
+          Properties:
+            State: DISABLED
+            RetryPolicy:
+              MaximumRetryAttempts: 2
+              MaximumEventAgeInSeconds: 240
+            ScheduleExpression:
+              !Join
+              - ''
+              - - 'rate('
+                - !Ref timePeriodValue
+                - ' '
+                - !Ref timePeriodUnit
+                - ')'
+            Name:
+              !Join
+              - '-'
+              - - !Ref mainScrape
+                - 'schedule'
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: !Ref mainScrapeLog
+
+  libsMainScrape:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      # Form a layer name like <function name>-layer
+      LayerName:
+        !Join
+        - '-'
+        - - !Ref mainScrape
+          - 'layer'
+      Description: Python packages used by the lambda.
+      ContentUri: main_scrape_package
+      CompatibleArchitectures:
+        - x86_64
+      CompatibleRuntimes:
+        - python3.10
+
+  newsScrapeLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      RetentionInDays: 3
+      LogGroupName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'lambda-news-scrape-log'
+
+  queue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 43200
+      QueueName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'queue'
+      RedriveAllowPolicy:
+        redrivePermission: denyAll
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DLQ.Arn
+        maxReceiveCount: 3
+      VisibilityTimeout:
+        # Make this 10x the lambda timeout
+        !Join
+        - ''
+        - - !Ref timeout
+          - '0'
+
+  DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 432000
+      QueueName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'dlq'
+
+  newsScrape:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        !Join
+        - '-'
+        - - !Ref stackName
+          - 'lambda-news-scrape'
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      PackageType: Zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: news_scrape
+      Description: Read data from SQS and write to RDS
+      Timeout: !Ref timeout
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AWSLambdaVPCAccessExecutionRole
+        - AWSLambdaSQSQueueExecutionRole
+      Layers:
+        - Ref: libsNewsScrape
+      Events:
+        SQSEvent:
+          Type: SQS
+          Description: Run the Lambda with an SQS event
+          Properties:
+            BatchSize: 1
+            MaximumBatchingWindowInSeconds: 0
+            Enabled: true
+            Queue: !GetAtt queue.Arn
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: !Ref newsScrapeLog
+
+  libsNewsScrape:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName:
+        !Join
+        - '-'
+        - - !Ref newsScrape
+          - 'layer'
+      Description: Python packages used by the lambda.
+      ContentUri: news_scrape_package
+      CompatibleArchitectures:
+        - x86_64
+      CompatibleRuntimes:
+        - python3.10
