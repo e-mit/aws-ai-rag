@@ -21,12 +21,12 @@ logger.setLevel(os.getenv('LOG_LEVEL', 'DEBUG'))
 
 GET_TIMEOUT_SEC = float(os.getenv('GET_TIMEOUT_SEC', 5))
 OSS_CLUSTER_URL = os.getenv('OSS_CLUSTER_URL', "abcde")
-EMBEDDING_DIMENSION = 1024
-INDEX_NAME = "news"
-AWS_REGION = "eu-west-3"
+AWS_REGION = os.getenv('AWS_REGION', "eu-west-3")
 MAXIMUM_DELETE_BATCH_SIZE = 100
 DOCUMENT_EXPIRY_TIME_DAYS = 5
 EMBEDDING_MODEL_ID = "amazon.titan-embed-image-v1"
+EMBEDDING_DIMENSION = 1024
+INDEX_NAME = "news"
 SERVICE = 'es'
 
 embedding_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
