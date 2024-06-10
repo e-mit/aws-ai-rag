@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Create an OpenSearchService
+Parameters:
+  ossDomainName:
+    Description: The OSS domain name
+    Type: String
+    MinLength: 1
+    MaxLength: 50
+
+Resources:
+
+  ossDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: !Ref ossDomainName
+      EngineVersion: OpenSearch_2.13
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: 10
+        VolumeType: standard
+      ClusterConfig:
+        InstanceCount: 1
+        InstanceType: t2.small.search
+  AccessPolicies:
+      Version: '2012-10-17'
+      Statement:
+        -
+          Effect: 'Allow'
+          Principal:
+            AWS: "arn:aws:iam::637423608549:user/e"
+          Action: 'es:*'
+          Resource: "arn:aws:es:eu-west-3:637423608549:domain/osstest1-domain/*"
