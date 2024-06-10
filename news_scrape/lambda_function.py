@@ -17,7 +17,7 @@ from requests_aws4auth import AWS4Auth
 import sqs_event
 
 logger = logging.getLogger()
-logger.setLevel(os.getenv('LOG_LEVEL', 'INFO'))
+logger.setLevel(os.getenv('LOG_LEVEL', 'DEBUG'))
 
 GET_TIMEOUT_SEC = float(os.getenv('GET_TIMEOUT_SEC', 5))
 OSS_CLUSTER_URL = os.getenv('OSS_CLUSTER_URL', "abcde")

@@ -76,6 +76,9 @@ Resources:
   mainScrape:
     Type: AWS::Serverless::Function
     Properties:
+      Environment:
+        Variables:
+          SQS_URL: !Ref queue
       FunctionName:
         !Join
         - '-'
@@ -95,7 +98,7 @@ Resources:
         - AWSLambda_ReadOnlyAccess
         - !Ref accessPolicyToSQS
       Layers:
-        - Ref: libsMainScrape
+        - Ref: libScrape
       Events:
         ScheduledEvent:
           Type: ScheduleV2
@@ -122,17 +125,16 @@ Resources:
         LogFormat: Text
         LogGroup: !Ref mainScrapeLog
 
-  libsMainScrape:
+  libScrape:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      # Form a layer name like <function name>-layer
       LayerName:
         !Join
         - '-'
-        - - !Ref mainScrape
+        - - !Ref stackName
           - 'layer'
-      Description: Python packages used by the lambda.
-      ContentUri: main_scrape_package
+      Description: Python packages used by the lambdas.
+      ContentUri: package
       CompatibleArchitectures:
         - x86_64
       CompatibleRuntimes:
@@ -183,6 +185,9 @@ Resources:
   newsScrape:
     Type: AWS::Serverless::Function
     Properties:
+      Environment:
+        Variables:
+          OSS_CLUSTER_URL: !Ref ossDomain
       FunctionName:
         !Join
         - '-'
@@ -203,7 +208,7 @@ Resources:
         - AWSLambdaVPCAccessExecutionRole
         - AWSLambdaSQSQueueExecutionRole
       Layers:
-        - Ref: libsNewsScrape
+        - Ref: libScrape
       Events:
         SQSEvent:
           Type: SQS
@@ -216,18 +221,3 @@ Resources:
       LoggingConfig:
         LogFormat: Text
         LogGroup: !Ref newsScrapeLog
-
-  libsNewsScrape:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName:
-        !Join
-        - '-'
-        - - !Ref newsScrape
-          - 'layer'
-      Description: Python packages used by the lambda.
-      ContentUri: news_scrape_package
-      CompatibleArchitectures:
-        - x86_64
-      CompatibleRuntimes:
-        - python3.10
