@@ -1,4 +1,5 @@
 """Create a k-NN index in the OpenSearch Service database"""
+
 import os
 
 from opensearchpy import OpenSearch, RequestsHttpConnection

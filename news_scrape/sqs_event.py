@@ -1,11 +1,6 @@
-"""Pydantic model for validating AWS SQS event data input to Lambda.
-
-This allows easy extraction of the 'responsePayload' field from the
-event data, which is the (json) data originally enqueued in the SQS.
-"""
+"""Pydantic model for validating AWS SQS event data input to Lambda."""
 
 from typing import Any, Iterator, Literal, Annotated
-from datetime import datetime
 from annotated_types import Len
 
 from pydantic import BaseModel, BeforeValidator
@@ -14,15 +9,12 @@ from pydantic import BaseModel, BeforeValidator
 class SQSRecordBody(BaseModel):
     """Represents data within the record object.
 
-    The responsePayload is the user-enqueued data.
+    This is for messages enqueued using boto3 send_message(). If
+    returning a message from a lambda into the queue, the record
+    object is more complex (user data in 'responsePayload' field).
     """
 
-    version: str
-    timestamp: datetime
-    requestContext: dict
-    requestPayload: dict
-    responseContext: dict
-    responsePayload: dict
+    url: str
 
 
 class SQSRecord(BaseModel):
@@ -53,4 +45,4 @@ def extract(event: dict[str, Any]) -> Iterator[dict]:
     """
     validated_event = SQSEvent(**event)
     for record in validated_event.Records:
-        yield record.body.responsePayload
+        yield record.body.model_dump()
