@@ -20,7 +20,7 @@ logger = logging.getLogger()
 logger.setLevel(os.getenv('LOG_LEVEL', 'DEBUG'))
 
 GET_TIMEOUT_SEC = float(os.getenv('GET_TIMEOUT_SEC', 5))
-OSS_CLUSTER_URL = os.getenv('OSS_CLUSTER_URL', "abcde")
+OSS_CLUSTER_URL = os.getenv('OSS_CLUSTER_URL', "https://example.com")
 AWS_REGION = os.getenv('AWS_REGION', "eu-west-3")
 MAXIMUM_DELETE_BATCH_SIZE = 100
 DOCUMENT_EXPIRY_TIME_DAYS = 5
@@ -41,6 +41,7 @@ oss_client = OpenSearch(
         verify_certs=True,
         ssl_assert_hostname=False,
         ssl_show_warn=False,
+        http_compress=True,
         connection_class=RequestsHttpConnection
         )
 
@@ -49,12 +50,12 @@ def id_is_in_database(client: OpenSearch, index: str, id: str) -> bool:
     """Find out if the id is already in the database."""
     query_match = {
         "size": 2,  # Limits number of hits returned
-        "query": {"match": {"id": id}}
+        "query": {"ids": {"values": [id]}}
     }
     results = client.search(
         body=query_match,
         index=index,
-        _source="id",
+        _source="false",
     )
     nhits = len(results["hits"]["hits"])
     if nhits > 1:
@@ -62,8 +63,8 @@ def id_is_in_database(client: OpenSearch, index: str, id: str) -> bool:
     return nhits != 0
 
 
-def delete_old_documents(client: OpenSearch, index: str, expiry_time_days: int
-                         ) -> None:
+def delete_old_documents(client: OpenSearch, index: str,
+                         expiry_time_days: int) -> None:
     """Delete all expired documents from the database."""
     expiry_timestamp = (datetime.datetime.now()
                         - timedelta(days=expiry_time_days)).timestamp()
@@ -74,8 +75,8 @@ def delete_old_documents(client: OpenSearch, index: str, expiry_time_days: int
     client.delete_by_query(index=index, body=query_body_time, refresh=True)
 
 
-def apply_embedding(embed_client, embed_model: str, input_text: str
-                    ) -> list[float]:
+def apply_embedding(embed_client, embed_model: str,
+                    input_text: str) -> list[float]:
     """Convert input text to a vector embedding."""
     response = embed_client.invoke_model(
         modelId=embed_model, body=json.dumps({"inputText": input_text}))
