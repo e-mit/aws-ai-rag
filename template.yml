@@ -22,6 +22,12 @@ Parameters:
     Type: Number
     MinValue: 1
     Default: 180
+  logLevel:
+    Description: The log level for the lambda functions, e.g. DEBUG
+    Type: String
+    MinLength: 1
+    MaxLength: 50
+    Default: INFO
 
 Resources:
 
@@ -47,7 +53,7 @@ Resources:
         -
           Effect: 'Allow'
           Principal:
-            AWS: "arn:aws:iam::637423608549:user/e"
+            AWS: !Ref "AWS::AccountId"
           Action: 'es:*'
           Resource: !Sub ${ossDomain.Arn}/*
 
@@ -71,14 +77,15 @@ Resources:
         Statement:
           - Effect: Allow
             Action: 'sqs:SendMessage'
-            Resource: !Ref queueARN
+            Resource: !GetAtt queue.Arn
 
   mainScrape:
     Type: AWS::Serverless::Function
     Properties:
       Environment:
         Variables:
-          SQS_URL: !Ref queue
+          SQS_URL: !GetAtt queue.QueueUrl
+          LOG_LEVEL: !Ref logLevel
       FunctionName:
         !Join
         - '-'
@@ -104,7 +111,7 @@ Resources:
           Type: ScheduleV2
           Description: Repeating trigger for the Lambda
           Properties:
-            State: DISABLED
+            State: ENABLED
             RetryPolicy:
               MaximumRetryAttempts: 2
               MaximumEventAgeInSeconds: 240
@@ -187,7 +194,9 @@ Resources:
     Properties:
       Environment:
         Variables:
-          OSS_CLUSTER_URL: !Ref ossDomain
+          OSS_CLUSTER_URL: !GetAtt ossDomain.DomainEndpoint
+          LOG_LEVEL: !Ref logLevel
+          AWS_REGION: !Ref "AWS::Region"
       FunctionName:
         !Join
         - '-'

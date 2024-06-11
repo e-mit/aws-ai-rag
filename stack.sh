@@ -1,5 +1,4 @@
 #!/bin/bash
-# Version 3.1.0
 
 # A script to create a Cloudformation stack.
 
