@@ -47,15 +47,15 @@ Resources:
       ClusterConfig:
         InstanceCount: 1
         InstanceType: t2.small.search
-  AccessPolicies:
-      Version: '2012-10-17'
-      Statement:
-        -
-          Effect: 'Allow'
-          Principal:
-            AWS: !Ref "AWS::AccountId"
-          Action: 'es:*'
-          Resource: !Sub ${ossDomain.Arn}/*
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: 'Allow'
+            Principal:
+              AWS: !Ref "AWS::AccountId"
+            Action: 'es:*'
+            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${stackName}-oss-domain/*'
 
   mainScrapeLog:
     Type: AWS::Logs::LogGroup
@@ -196,7 +196,6 @@ Resources:
         Variables:
           OSS_CLUSTER_URL: !GetAtt ossDomain.DomainEndpoint
           LOG_LEVEL: !Ref logLevel
-          AWS_REGION: !Ref "AWS::Region"
       FunctionName:
         !Join
         - '-'
@@ -209,7 +208,7 @@ Resources:
       Handler: lambda_function.lambda_handler
       Runtime: python3.10
       CodeUri: news_scrape
-      Description: Read data from SQS and write to RDS
+      Description: Read events from SQS and process
       Timeout: !Ref timeout
       Policies:
         - AWSLambdaBasicExecutionRole
