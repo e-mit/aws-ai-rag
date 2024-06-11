@@ -4,8 +4,8 @@ export AWS_REGION=eu-west-3
 export STACK_NAME=osstest2
 
 # Time period for the main page scrape lambda repetition:
-export CYCLE_PERIOD_VALUE=2
-export CYCLE_PERIOD_UNIT=minute
+export CYCLE_PERIOD_VALUE=4
+export CYCLE_PERIOD_UNIT=hour
 
 export LOG_LEVEL='DEBUG'
 
