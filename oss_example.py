@@ -4,13 +4,12 @@ from opensearchpy import OpenSearch, RequestsHttpConnection
 import boto3
 from requests_aws4auth import AWS4Auth
 
-CLUSTER_URL = 'https://search-osstest1-domain-cjp2xxkwrxweso53njzwamklxq.eu-west-3.es.amazonaws.com'
-EMBEDDING_DIMENSION = 1024
+NODE_URL = 'https://search-osstest1-domain-cjp2xxkwrxweso53njzwamklxq.eu-west-3.es.amazonaws.com'
 INDEX_NAME = "test"  # must be lower case
 AWS_REGION = "eu-west-3"
 
+EMBEDDING_MODEL = {'id': "amazon.titan-embed-image-v1", 'dimension': 1024}
 embedding_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
-embedding_model_id = "amazon.titan-embed-image-v1"
 
 ##################################################
 
@@ -20,19 +19,21 @@ awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    service, session_token=credentials.token)
 
 client = OpenSearch(
-        hosts=[CLUSTER_URL],
+        hosts=[NODE_URL],
         http_auth=awsauth,
         use_ssl=True,
         verify_certs=True,
         ssl_assert_hostname=False,
         ssl_show_warn=False,
+        http_compress=True,
         connection_class=RequestsHttpConnection
         )
 
 
 def apply_embedding(input_text: str) -> list[float]:
     response = embedding_client.invoke_model(
-        modelId=embedding_model_id, body=json.dumps({"inputText": input_text}))
+        modelId=EMBEDDING_MODEL['id'],
+        body=json.dumps({"inputText": input_text}))
     return json.loads(response["body"].read())["embedding"]
 
 
@@ -44,19 +45,19 @@ index_body = {
   },
   "mappings": {
     "properties": {
-        "embedding": {
-          "type": "knn_vector",
-          "dimension": EMBEDDING_DIMENSION,
-          "method": {
-            "name": "hnsw",
-            "space_type": "l2",
-            "engine": "lucene",  # nmslib, lucene, faiss
-            "parameters": {
-              "ef_construction": 100,
-              "m": 16
-            }
+      "embedding": {
+        "type": "knn_vector",
+        "dimension": EMBEDDING_MODEL['dimension'],
+        "method": {
+          "name": "hnsw",
+          "space_type": "l2",
+          "engine": "lucene",  # nmslib, lucene, faiss
+          "parameters": {
+            "ef_construction": 100,
+            "m": 16
           }
         }
+      }
     }
   }
 }
@@ -94,8 +95,10 @@ query_embedding = apply_embedding(user_query)
 
 query_body = {
     "size": 3,  # Limits number of hits returned
-    "query": {"knn": {"embedding": {"vector": query_embedding, "k": 10}}}
+    "query": {"knn": {"embedding": {"vector": query_embedding, "k": 3}}}
 }
+# "k" is the number of nearest-neighbours found per shard/segment
+# "size" acts as an overall limit on the number returned.
 
 results = client.search(
     body=query_body,
