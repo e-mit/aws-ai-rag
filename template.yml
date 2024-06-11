@@ -213,7 +213,8 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambda_ReadOnlyAccess
-        - AWSLambdaVPCAccessExecutionRole
+        - AmazonOpenSearchServiceFullAccess
+        - AmazonBedrockFullAccess
         - AWSLambdaSQSQueueExecutionRole
       Layers:
         - Ref: libScrape
