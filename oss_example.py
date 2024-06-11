@@ -78,7 +78,7 @@ timestamps = [100, 200, 300]
 for i, input_text in enumerate(input_texts):
     res = client.index(
         index=INDEX_NAME,
-        body={"id": ids[i], "timestamp": timestamps[i],
+        body={"timestamp": timestamps[i],
               "embedding": apply_embedding(input_text)},
         id=ids[i],
         refresh=True
@@ -103,7 +103,7 @@ query_body = {
 results = client.search(
     body=query_body,
     index=INDEX_NAME,
-    _source="id",
+    _source="false",
 )
 
 print()
@@ -122,7 +122,7 @@ client.delete(index=INDEX_NAME, id=1, refresh=True)
 results = client.search(
     body=query_body,
     index=INDEX_NAME,
-    _source="id",
+    _source="false",
 )
 for i, result in enumerate(results["hits"]["hits"]):
     id = result['_id']
@@ -140,7 +140,7 @@ client.delete_by_query(index=INDEX_NAME, body=query_body_time, refresh=True)
 results = client.search(
     body=query_body,
     index=INDEX_NAME,
-    _source="id",
+    _source="false",
 )
 for i, result in enumerate(results["hits"]["hits"]):
     id = result['_id']
@@ -148,27 +148,40 @@ for i, result in enumerate(results["hits"]["hits"]):
     print(f"Result{i+1}: ID={id}, Score={score}")
 
 
-# look for matching id value
+# look for matching **_id** value
 query_body_match = {
-    "size": 3,  # Limits number of hits returned
-    "query": {"match": {"id": 2}}
+    "size": 2,  # Limits number of hits returned
+    "query": {"ids": {"values": [2]}}
 }
 results = client.search(
     body=query_body_match,
     index=INDEX_NAME,
-    _source="id",
+    _source='false',
+)
+print()
+print(results)
+
+# look for matching timestamp value (ie. a document field, not the _id)
+query_body_match2 = {
+    "size": 2,  # Limits number of hits returned
+    "query": {"match": {"timestamp": 300}}
+}
+results = client.search(
+    body=query_body_match2,
+    index=INDEX_NAME,
+    _source='false',
 )
 print()
 print(results)
 
 query_body_nomatch = {
     "size": 3,  # Limits number of hits returned
-    "query": {"match": {"id": 99}}
+    "query": {"ids": {"values": [99]}}
 }
 results = client.search(
     body=query_body_nomatch,
     index=INDEX_NAME,
-    _source="id",
+    _source='false',
 )
 print()
 print(results)
