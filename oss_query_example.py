@@ -1,3 +1,7 @@
+"""Query the OpenSearch Service database"""
+
+import datetime
+from datetime import timedelta
 import json
 
 from opensearchpy import OpenSearch, RequestsHttpConnection
@@ -36,6 +40,7 @@ def apply_embedding(input_text: str) -> list[float]:
         body=json.dumps({"inputText": input_text}))
     return json.loads(response["body"].read())["embedding"]
 
+
 ##############################
 
 # Example query
@@ -53,8 +58,48 @@ query_body = {
 results = client.search(
     body=query_body,
     index=INDEX_NAME,
-    _source="title, url",
+    _source="title,url",
 )
 
 print()
 print(results)
+
+##############################
+
+# Example query with filtering by date
+user_query2 = "Ukraine"
+
+query_embedding2 = apply_embedding(user_query)
+
+time_now = datetime.datetime.now()
+query_body2 = {
+    "size": 3,  # Limits number of hits returned
+    "query": {"knn": {"embedding": {
+        "vector": query_embedding2, "k": 3, "filter": {
+          "bool": {
+            "must": [
+              {
+                "range": {
+                  "time_read": {
+                    "gte": (time_now - timedelta(hours=8)).timestamp(),
+                    "lte": time_now.timestamp()
+                  }
+                }
+              }
+            ]
+          }
+        }
+    }
+}}}
+
+# For categorical data, use "term" in place of "range"
+# e.g.   {"term": {"size": "small"}}
+
+results2 = client.search(
+    body=query_body2,
+    index=INDEX_NAME,
+    _source="title,url,time_read",
+)
+
+print()
+print(results2)
