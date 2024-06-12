@@ -21,6 +21,7 @@ query = 'what has happened in malawi?'
 QUERY_SIZE = 3
 QUERY_K = 3
 SCORE_THRESHOLD = 0.1
+EXPIRY_PERIOD_DAYS = 8
 
 # LLM parameters:
 LLM_MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
@@ -111,6 +112,9 @@ dates = json.loads(date_text.replace("'", '"'))
 
 if not dates or dates == ['null']:
     dates = []
+else:
+    expiry_date = datetime.datetime.now() - timedelta(days=EXPIRY_PERIOD_DAYS)
+    dates = [x for x in dates if datetime.datetime.strptime(x, "%Y-%m-%d") > expiry_date]
 
 print()
 print(f"Found {len(dates)} relevant dates.")
