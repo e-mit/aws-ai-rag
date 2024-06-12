@@ -15,7 +15,7 @@ NODE_URL = 'https://search-osstest2-oss-domain-2fgz4fbh4p2z3ul3z7goiutaay.eu-wes
 INDEX_NAME = "news"  # must be lower case
 AWS_REGION = "eu-west-3"
 
-query = 'what has happened in the UK today and yesterday?'
+query = 'what has happened in malawi?'
 
 # Search result selection parameters:
 QUERY_SIZE = 3
@@ -124,6 +124,7 @@ query_body = {
         "vector": apply_embedding(query), "k": QUERY_K}}}
 }
 
+rejected_hits = []
 if not dates:
     results = client.search(
         body=query_body,
@@ -173,11 +174,22 @@ else:
 
     # Select the best hits:
     all_hits.sort(key=lambda h: h['_score'], reverse=True)
-    hits = all_hits[0:QUERY_SIZE]
+    n_to_keep = QUERY_SIZE * len(dates)
+    hits = all_hits[0:n_to_keep]
+    rejected_hits.extend(all_hits[n_to_keep:])
 
 ###################################################
 
+
+def print_hit(hit):
+    print(f"  Score: {hit['_score']:.4f}")
+    print(f"  Date: {datetime.datetime.fromtimestamp(hit['_source']['time_read']).strftime('%d %B %Y')}")
+    print(f"  Title: {hit['_source']['title']}")
+    print(f"  Link: {hit['_source']['url']}")
+
+
 hits = [x for x in hits if x['_score'] >= SCORE_THRESHOLD]
+rejected_hits.extend([x for x in hits if x['_score'] < SCORE_THRESHOLD])
 print(f"After thresholding, have {len(hits)} hits, with scores of:"
       f" {', '.join(str(h['_score']) for h in hits)}")
 print()
@@ -199,4 +211,10 @@ else:
     print()
     print("The model could access the following source news articles for this answer:")
     for hit in hits:
-        print(f"  '{hit['_source']['title']}' {hit['_source']['url']}")
+        print_hit(hit)
+    if rejected_hits:
+        print()
+        print("The following articles were not passed to the model:")
+        rejected_hits.sort(key=lambda h: h['_score'], reverse=True)
+        for hit in rejected_hits:
+            print_hit(hit)
