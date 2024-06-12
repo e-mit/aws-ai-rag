@@ -85,7 +85,8 @@ def apply_embedding(embed_client, embed_model: str,
     return json.loads(response["body"].read())["embedding"]
 
 
-def scrape_news_page(url: str, content: bytes, id: str) -> dict['str', Any]:
+def scrape_news_page(url: str, content: bytes, id: str,
+                     time_now: datetime.datetime) -> dict['str', Any]:
     """Extract the useful data from the news page."""
     page = BeautifulSoup(content, 'html.parser')
     json_data = json.loads(page.head.script.text)
@@ -114,10 +115,11 @@ def scrape_news_page(url: str, content: bytes, id: str) -> dict['str', Any]:
         'title': title,
         'subtitle': subtitle,
         'url': url,
+        'date': str(time_now.date()),
         'last_modified': datetime.datetime.fromisoformat(
                 json_data['dateModified'].replace('Z', '+00:00')
                 ).timestamp(),
-        'time_read': datetime.datetime.now().timestamp(),
+        'time_read': time_now.timestamp(),
         'related': [x.text.strip() for x in page.find_all(
             "a", {"class": "ssrcss-z69h1q-StyledLink ed0g1kj0"})],
         'paragraph_1': paragraphs_1_2_3[0],
@@ -125,8 +127,9 @@ def scrape_news_page(url: str, content: bytes, id: str) -> dict['str', Any]:
                            + paragraphs_1_2_3[2])
         }
     keys = ['title', 'subtitle', 'paragraph_1', 'paragraphs_2_3']
-    info['chunk'] = (" ".join(info[k] for k in keys)
-                     + " " + ". ".join(j for j in info['related']) + ".")
+    info['chunk'] = (str(time_now.date()) + ". "
+                     + " ".join(info[k] for k in keys) + " "
+                     + ". ".join(j for j in info['related']) + ".")
     info['embedding'] = apply_embedding(embedding_client,
                                         EMBEDDING_MODEL_ID,
                                         info['chunk'])
@@ -148,17 +151,14 @@ def lambda_handler(event: dict[str, Any], _context_unused: Any) -> None:
         for url_dict in sqs_event.extract(event):
             logger.debug("Extracted url: %s", url_dict['url'])
 
-            id = pathlib.Path(url_dict['url']).stem
-
-            # see if URL has already been scraped:
-            if id_is_in_database(oss_client, INDEX_NAME, id):
-                continue
+            time_now = datetime.datetime.now()
+            id = f"{pathlib.Path(url_dict['url']).stem}_{time_now.date()}"
 
             response = requests.get(url_dict['url'], timeout=GET_TIMEOUT_SEC)
             if response.status_code != 200:
                 raise ValueError("Bad status code")
 
-            info = scrape_news_page(url_dict['url'], response.content, id)
+            info = scrape_news_page(url_dict['url'], response.content, id, time_now)
 
             oss_client.index(
                 index=INDEX_NAME,
