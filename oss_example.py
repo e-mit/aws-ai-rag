@@ -1,3 +1,5 @@
+"""Create an index, add data, query it, delete the index."""
+
 import json
 
 from opensearchpy import OpenSearch, RequestsHttpConnection
@@ -79,10 +81,22 @@ for i, input_text in enumerate(input_texts):
     res = client.index(
         index=INDEX_NAME,
         body={"timestamp": timestamps[i],
+              "text": input_text,
               "embedding": apply_embedding(input_text)},
         id=ids[i],
         refresh=True
     )
+
+# test overwriting:
+input_texts[1] = "The kitchen needs salt"
+res = client.index(
+    index=INDEX_NAME,
+    body={"timestamp": timestamps[1],
+          "text": input_texts[1],
+          "embedding": apply_embedding(input_texts[1])},
+    id=ids[1],
+    refresh=True
+)
 
 #####################################################
 
@@ -103,7 +117,7 @@ query_body = {
 results = client.search(
     body=query_body,
     index=INDEX_NAME,
-    _source="false",
+    _source="text",
 )
 
 print()

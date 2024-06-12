@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Run this script to deploy the project on AWS
+
 export AWS_REGION=eu-west-3
 export STACK_NAME=osstest2
 
