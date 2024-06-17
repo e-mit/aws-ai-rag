@@ -4,3 +4,5 @@ beautifulsoup4==4.12.3
 opensearch-py==2.6.0
 requests-aws4auth==1.2.3
 pydantic==2.7.3
+mangum==0.17.0
+fastapi==0.111.0
