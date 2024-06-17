@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from datetime import datetime
 
 import news_page_info
 
@@ -15,8 +16,11 @@ def test_scrape_news_page():
         content = in_file.read()
     id = Path(TEST_URL).stem
     info = lambda_function.scrape_news_page(
-        TEST_URL, content, id)
+        TEST_URL, content, id, datetime.now())
     assert info['time_read'] > news_page_info.info['time_read']
+    info['date'] = 0
     info['time_read'] = 0
     news_page_info.info['time_read'] = 0
-    assert info == news_page_info.info
+    news_page_info.info['date'] = 0
+    for k in info:
+        assert info[k] == news_page_info.info[k]
