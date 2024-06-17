@@ -127,8 +127,7 @@ def scrape_news_page(url: str, content: bytes, id: str,
                            + paragraphs_1_2_3[2])
         }
     keys = ['title', 'subtitle', 'paragraph_1', 'paragraphs_2_3']
-    info['chunk'] = (str(time_now.date()) + ". "
-                     + " ".join(info[k] for k in keys) + " "
+    info['chunk'] = (" ".join(info[k] for k in keys) + " "
                      + ". ".join(j for j in info['related']) + ".")
     info['embedding'] = apply_embedding(embedding_client,
                                         EMBEDDING_MODEL_ID,
