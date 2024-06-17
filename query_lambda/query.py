@@ -26,7 +26,7 @@ native_request: dict[str, Any] = {
 }
 
 
-def invoke_llm(prompt: str) -> dict[str, Any]:
+def invoke_llm(prompt: str) -> str:
     """Send a prompt to the LLM and return the response."""
     native_request['messages'][0]['content'] = prompt
     try:
@@ -35,7 +35,7 @@ def invoke_llm(prompt: str) -> dict[str, Any]:
     except Exception as e:
         logger.error('Prompt: %s', prompt)
         raise e
-    return json.loads(response["body"].read())
+    return json.loads(response["body"].read())['content'][0]['text']
 
 
 def is_question_appropriate(query: str) -> bool:
@@ -43,8 +43,7 @@ def is_question_appropriate(query: str) -> bool:
     ok_prompt = ("Does the following query relate to the news? Answer yes"
                  f" or no. Do not return any other text. Query: '{query}'")
     ok_response = invoke_llm(ok_prompt)
-    ok_text = ok_response["content"][0]["text"]
-    return ok_text.lower() == "yes"
+    return ok_response.lower() == "yes"
 
 
 def get_relevant_dates(query: str) -> list[date] | None:
@@ -59,8 +58,7 @@ def get_relevant_dates(query: str) -> list[date] | None:
          f" Query: '{query}'")
 
     date_response = invoke_llm(date_prompt)
-    date_strings = json.loads(
-        date_response["content"][0]["text"].replace("'", '"'))
+    date_strings = json.loads(date_response.replace("'", '"'))
 
     if not date_strings or date_strings == ['null']:
         return None

@@ -44,5 +44,5 @@ def lambda_handler(event: Any, _context_unused: Any) -> dict[str, Any]:
 
     combined_prompt = query.create_combined_prompt(event['query'], hits)
     model_response = query.invoke_llm(combined_prompt)
-    return {'response': model_response['content'][0]['text'],
+    return {'response': model_response,
             'article_refs': [x.get_article_summary() for x in hits]}
