@@ -97,7 +97,7 @@ Resources:
       PackageType: Zip
       Handler: lambda_function.lambda_handler
       Runtime: python3.10
-      CodeUri: main_scrape
+      CodeUri: main_scrape_lambda
       Description: Do a periodic scrape of the main page
       Timeout: !Ref timeout
       Policies:
@@ -207,7 +207,7 @@ Resources:
       PackageType: Zip
       Handler: lambda_function.lambda_handler
       Runtime: python3.10
-      CodeUri: news_scrape
+      CodeUri: news_scrape_lambda
       Description: Read events from SQS and process
       Timeout: !Ref timeout
       Policies:

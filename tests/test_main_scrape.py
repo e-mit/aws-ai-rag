@@ -3,9 +3,9 @@ from pathlib import Path
 
 import main_page_list
 
-sys.path.append("main_scrape")
+sys.path.append("main_scrape_lambda")
 
-from main_scrape import lambda_function  # noqa
+from main_scrape_lambda import lambda_function  # noqa
 
 
 def test_get_main_page_urls():

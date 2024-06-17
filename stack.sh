@@ -49,8 +49,8 @@ _make_names() {
 }
 
 _delete_files() {
-    rm -rf main_scrape/__pycache__ news_scrape/__pycache__
-    rm -f main_scrape/*.pyc news_scrape/*.pyc out.yml *.zip
+    rm -rf main_scrape_lambda/__pycache__ news_scrape_lambda/__pycache__
+    rm -f main_scrape_lambda/*.pyc news_scrape_lambda/*.pyc out.yml *.zip
 }
 
 delete() {
@@ -168,7 +168,7 @@ update_function() {
     _make_names
     _delete_files
 
-    cd main_scrape
+    cd main_scrape_lambda
     zip -r ../function.zip .
     cd ..
     aws lambda update-function-code \
@@ -179,7 +179,7 @@ update_function() {
     fi
 
     rm -f *.zip
-    cd news_scrape
+    cd news_scrape_lambda
     zip -r ../function.zip .
     cd ..
     aws lambda update-function-code \

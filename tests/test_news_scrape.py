@@ -3,9 +3,9 @@ from pathlib import Path
 
 import news_page_info
 
-sys.path.append("news_scrape")
+sys.path.append("news_scrape_lambda")
 
-from news_scrape import lambda_function  # noqa
+from news_scrape_lambda import lambda_function  # noqa
 
 TEST_URL = 'https://www.bbc.co.uk/news/articles/c99zn92g2qgo'
 
