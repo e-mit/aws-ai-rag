@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from pydantic import BaseModel, field_validator, HttpUrl
+from pydantic import BaseModel, field_validator, HttpUrl, Field
 
 import params
 
@@ -26,10 +26,10 @@ class Source(SourceSummary):
 
 class SearchHit(BaseModel):
     """Represents an OpenSearch search hit."""
-    index: str
-    _id: str
-    _score: float
-    _source: Source
+    index: str = Field(alias="_index")
+    id: str = Field(alias="_id")
+    score: float = Field(alias="_score")
+    source: Source = Field(alias="_source")
 
     @field_validator('index')
     @classmethod
@@ -40,5 +40,5 @@ class SearchHit(BaseModel):
         return v
 
     def get_article_summary(self) -> dict[str, Any]:
-        return {k: getattr(self._source, k) for k in
+        return {k: getattr(self.source, k) for k in
                 SourceSummary.model_fields.keys()}

@@ -33,12 +33,12 @@ def lambda_handler(event: Any, _context_unused: Any) -> dict[str, Any]:
         all_hits: list[SearchHit] = []
         for day in dates:
             all_hits.extend(DateFilteredSearch(event['query'], day, day).run())
-        all_hits.sort(key=lambda h: h._score, reverse=True)
+        all_hits.sort(key=lambda h: h.score, reverse=True)
         n_to_keep = min([params.QUERY_SIZE * len(dates), params.HIT_LIMIT])
         hits = all_hits[0:n_to_keep]
 
     # Reject low scoring hits
-    hits = [x for x in hits if x._score >= params.SCORE_THRESHOLD]
+    hits = [x for x in hits if x.score >= params.SCORE_THRESHOLD]
     if not hits:
         return {'response': params.NO_RESULTS_REPLY, 'article_refs': []}
 

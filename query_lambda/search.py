@@ -48,7 +48,7 @@ class Search:
     def __init__(self, query: str):
         self.query = query
 
-    def get_query_body(self) -> dict[str, Any]:
+    def _get_query_body(self) -> dict[str, Any]:
         """Create the search query."""
         return {
             "size": params.QUERY_SIZE,
@@ -60,7 +60,7 @@ class Search:
     def run(self) -> list[SearchHit]:
         """Execute the search."""
         results = os_client.search(
-            body=self.get_query_body(),
+            body=self._get_query_body(),
             index=OSS_INDEX_NAME,
             _source=Source.get_attribute_string()  # type: ignore
         )
@@ -77,9 +77,9 @@ class DateFilteredSearch(Search):
         self.t1 = datetime.combine(start_day, datetime.min.time())
         self.t2 = datetime.combine(end_day, datetime.max.time())
 
-    def get_query_body(self) -> dict[str, Any]:
+    def _get_query_body(self) -> dict[str, Any]:
         """Create the search query."""
-        date_query_body = super().get_query_body()
+        date_query_body = super()._get_query_body()
         date_query_body['query']['knn']['embedding']['filter'] = {
             "bool": {
                 "must": [{

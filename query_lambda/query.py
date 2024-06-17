@@ -76,6 +76,6 @@ def create_combined_prompt(query: str, hits: list[SearchHit]) -> str:
     today = datetime.now().strftime('%d %B %Y')
     return (f"Today is {today}.\n\n" + "\n\n".join(
         "Summarized BBC news article from"
-        f" {datetime.fromtimestamp(x._source.time_read).strftime('%d %B %Y')}."
-        f"\n{x._source.chunk}" for x in hits)
+        f" {datetime.fromtimestamp(x.source.time_read).strftime('%d %B %Y')}."
+        f"\n{x.source.chunk}" for x in hits)
         + f"\n\nToday is {today}. {query}")
