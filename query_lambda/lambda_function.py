@@ -10,7 +10,7 @@ from .search import Search, DateFilteredSearch
 from .search_models import SearchHit
 
 from . import database
-from .database import LLM_Response
+from .database import LlmResponse
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
 AWS_REGION = os.environ['AWS_REGION']
@@ -20,10 +20,10 @@ logger.setLevel(LOG_LEVEL)
 logger.debug('Starting')
 
 
-def process_query(event: Any, _context_unused: Any) -> LLM_Response:
+def process_query(event: Any, _context_unused: Any) -> LlmResponse:
     """Prepare the RAG query, send to the LLM, and get an answer."""
     if not query.is_question_appropriate(event['query']):
-        return LLM_Response(answer=params.INAPPROPRIATE_REPLY,
+        return LlmResponse(answer=params.INAPPROPRIATE_REPLY,
                             article_refs=[])
 
     dates = query.get_relevant_dates(event['query'])
@@ -43,12 +43,12 @@ def process_query(event: Any, _context_unused: Any) -> LLM_Response:
     # Reject low scoring hits
     hits = [x for x in hits if x.score >= params.SCORE_THRESHOLD]
     if not hits:
-        return LLM_Response(answer=params.NO_RESULTS_REPLY,
+        return LlmResponse(answer=params.NO_RESULTS_REPLY,
                             article_refs=[])
 
     combined_prompt = query.create_combined_prompt(event['query'], hits)
     model_response = query.invoke_llm(combined_prompt)
-    return LLM_Response(answer=model_response,
+    return LlmResponse(answer=model_response,
                         article_refs=[x.get_article_summary() for x in hits])
 
 

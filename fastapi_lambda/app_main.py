@@ -12,7 +12,7 @@ from fastapi import status, Path
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from .models import LLM_Query, LLM_RequestQuery, QueryStatus
+from .models import LlmQuery, LlmRequestQuery, QueryStatus
 from . import database
 
 logger = logging.getLogger()
@@ -59,7 +59,7 @@ async def version() -> APIVersion:
 
 
 @app.post("/query", status_code=status.HTTP_201_CREATED)
-def post_query(query: LLM_RequestQuery) -> dict[str, str]:
+def post_query(query: LlmRequestQuery) -> dict[str, str]:
     """Start a new query."""
     id = str(uuid.uuid4().int)
     database.add_new(id)
@@ -67,7 +67,7 @@ def post_query(query: LLM_RequestQuery) -> dict[str, str]:
     response = lambda_client.invoke(
         FunctionName=LLM_LAMBDA_ARN,
         InvocationType='Event',
-        Payload=LLM_Query(**query.model_dump(), id=id).model_dump_json()
+        Payload=LlmQuery(**query.model_dump(), id=id).model_dump_json()
     )
     if 'FunctionError' in response:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

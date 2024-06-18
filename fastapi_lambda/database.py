@@ -13,7 +13,7 @@ TTL_MINUTES = 30
 logger = logging.getLogger()
 
 
-class LLM_Response(BaseModel):
+class LlmResponse(BaseModel):
     """Represents the LLM response as stored in the database."""
 
     answer: str
@@ -43,7 +43,7 @@ def add_new(id: str) -> None:
         ConditionExpression='attribute_not_exists(id)')
 
 
-def update(id: str, data: LLM_Response) -> None:
+def update(id: str, data: LlmResponse) -> None:
     """Store the data in the database, replacing previous record."""
     dynamo_table.put_item(Item={'id': id,
                                 'expiryTimestamp': get_expiry_timestamp(),
@@ -51,7 +51,7 @@ def update(id: str, data: LLM_Response) -> None:
                           ConditionExpression='attribute_exists(id)')
 
 
-def get(id: str) -> LLM_Response | None:
+def get(id: str) -> LlmResponse | None:
     """Get data, or None if pending; raise KeyError if not found."""
     data = dynamo_table.get_item(Key={"id": id},
                                  ProjectionExpression='reply')
@@ -59,5 +59,5 @@ def get(id: str) -> LLM_Response | None:
         raise KeyError("ID not found.")
     if not data.get("Item"):
         return None
-    return LLM_Response.model_validate_json(
+    return LlmResponse.model_validate_json(
         data.get("Item")['reply'])  # type: ignore

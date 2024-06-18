@@ -26,7 +26,7 @@ def test_get_version():
 
 def test_post_query_get_empty_response():
     app_main.lambda_client.invoke.reset_mock()
-    body = models.LLM_RequestQuery(query="What is the latest news?")
+    body = models.LlmRequestQuery(query="What is the latest news?")
     response = client.post("/query", json=body.model_dump())
     assert response.status_code == 201
     assert 'id' in response.json()
@@ -43,14 +43,14 @@ def test_post_query_get_empty_response():
 
 def test_post_query_get_response():
     app_main.lambda_client.invoke.reset_mock()
-    body = models.LLM_RequestQuery(query="What is the latest news?")
+    body = models.LlmRequestQuery(query="What is the latest news?")
     response = client.post("/query", json=body.model_dump())
     assert response.status_code == 201
     assert 'id' in response.json()
     id = response.json()['id']
     assert isinstance(id, str)
     app_main.lambda_client.invoke.assert_called_once()
-    response = database.LLM_Response(answer="the answer",
+    response = database.LlmResponse(answer="the answer",
                                      article_refs=["a", "b"])
     database.update(id, response)
     response2 = client.get(f"/query/{id}")
@@ -58,7 +58,7 @@ def test_post_query_get_response():
     data = response2.json()
     assert data['id'] == id
     assert data['status'] == 'completed'
-    assert (database.LLM_Response(
+    assert (database.LlmResponse(
         **data['response']).model_dump_json() == response.model_dump_json())
 
 

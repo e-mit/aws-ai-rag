@@ -8,13 +8,13 @@ from pydantic import BaseModel, Field, model_validator
 from . import database
 
 
-class LLM_RequestQuery(BaseModel):
+class LlmRequestQuery(BaseModel):
     """Represents the POSTed body input to the API."""
 
     query: str
 
 
-class LLM_Query(LLM_RequestQuery):
+class LlmQuery(LlmRequestQuery):
     """Represents the input to the RAG-LLM lambda."""
 
     id: str
@@ -23,20 +23,20 @@ class LLM_Query(LLM_RequestQuery):
 class StatusEnum(str, Enum):
     """Status of the query to the LLM."""
 
-    pending = 'pending'
-    completed = 'completed'
+    PENDING = 'pending'
+    COMPLETED = 'completed'
 
 
 class QueryStatus(BaseModel):
     """Represents the API response."""
 
     id: str
-    status: StatusEnum = Field(default=StatusEnum.pending, init=False)
-    response: database.LLM_Response | None
+    status: StatusEnum = Field(default=StatusEnum.PENDING, init=False)
+    response: database.LlmResponse | None
 
     @model_validator(mode='after')
     def check_status(self) -> Self:
         """Use the presence of a response to determine the status."""
         if self.response is not None:
-            self.status = StatusEnum.completed
+            self.status = StatusEnum.COMPLETED
         return self

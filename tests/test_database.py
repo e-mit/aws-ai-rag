@@ -38,7 +38,7 @@ def test_get_completed():
     id1 = str(uuid.uuid4().int)
     database.add_new(id1)
     assert database.get(id1) is None
-    data = database.LLM_Response(answer="this is the answer",
+    data = database.LlmResponse(answer="this is the answer",
                                  article_refs=["ref1", "ref2"])
     database.update(id1, data)
     get_data = database.get(id1)
@@ -47,7 +47,7 @@ def test_get_completed():
 
 
 def test_update_nonexistent():
-    data = database.LLM_Response(answer="this is the answer",
+    data = database.LlmResponse(answer="this is the answer",
                                  article_refs=["ref1", "ref2"])
     with pytest.raises(Exception):
         database.update('876543', data)
