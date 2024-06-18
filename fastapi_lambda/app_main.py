@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi import status, Path
 from fastapi import HTTPException
+from pydantic import BaseModel
 
 from models import LLM_Query, LLM_RequestQuery, GetStatus
 import database
@@ -18,16 +19,21 @@ logger = logging.getLogger()
 
 LLM_LAMBDA_ARN = os.environ['LLM_LAMBDA_ARN']
 TITLE = "RAG for LLM"
-API_VERSION = "0.1.0"
 MAX_ID_LENGTH = 39  # This is a 128-bit number
 
 lambda_client = boto3.client('lambda')
 
 
+class APIVersion(BaseModel):
+    """Provide the version of the API."""
+
+    api_version: str = "0.1.0"
+
+
 app = FastAPI(
     title=TITLE,
     description="An API for querying an LLM using RAG with news articles.",
-    version=API_VERSION,
+    version=f"v{APIVersion().api_version}",
     contact={
         "name": "e-mit.github.io",
         "url": "https://e-mit.github.io/"
@@ -47,9 +53,9 @@ async def root() -> RedirectResponse:
 
 
 @app.get("/version", tags=["Version"])
-async def version() -> str:
+async def version() -> APIVersion:
     """Get the API version."""
-    return API_VERSION
+    return APIVersion()
 
 
 @app.post("/query", status_code=status.HTTP_201_CREATED)
@@ -73,8 +79,9 @@ def post_query(query: LLM_RequestQuery) -> dict[str, str]:
 def get_response(id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
                  ) -> GetStatus:
     """Get the query response using its id."""
-    data = database.get(id)
-    if data is None:
+    try:
+        data = database.get(id)
+    except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Query ID does not exist")
     return GetStatus(id=id, response=data)
