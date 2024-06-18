@@ -10,23 +10,23 @@ from query_lambda import lambda_function, params  # noqa
 
 
 def test_success():
-    result = lambda_function.lambda_handler(
+    result = lambda_function.process_query(
         {'query': 'Summarize the UK news yesterday'}, None)
     print(result)  # NB: enable using: pytest -v -s tests
-    assert len(result['answer']) > 0
-    assert isinstance(result['answer'], str)
-    assert len(result['article_refs']) >= 1
+    assert len(result.answer) > 0
+    assert isinstance(result.answer, str)
+    assert len(result.article_refs) >= 1
 
 
 def test_inappropriate():
-    result = lambda_function.lambda_handler(
+    result = lambda_function.process_query(
         {'query': 'where can i buy pizza?'}, None)
-    assert result['answer'] == params.INAPPROPRIATE_REPLY
-    assert len(result['article_refs']) == 0
+    assert result.answer == params.INAPPROPRIATE_REPLY
+    assert len(result.article_refs) == 0
 
 
 def test_no_results():
-    result = lambda_function.lambda_handler(
+    result = lambda_function.process_query(
         {'query': 'What was the news in mongolia in 1975?'}, None)
-    assert result['answer'] == params.NO_RESULTS_REPLY
-    assert len(result['article_refs']) == 0
+    assert result.answer == params.NO_RESULTS_REPLY
+    assert len(result.article_refs) == 0
