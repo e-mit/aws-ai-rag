@@ -10,27 +10,33 @@ from . import database
 
 class LLM_RequestQuery(BaseModel):
     """Represents the POSTed body input to the API."""
+
     query: str
 
 
 class LLM_Query(LLM_RequestQuery):
     """Represents the input to the RAG-LLM lambda."""
+
     id: str
 
 
 class StatusEnum(str, Enum):
+    """Status of the query to the LLM."""
+
     pending = 'pending'
     completed = 'completed'
 
 
 class QueryStatus(BaseModel):
-    """Represents the API response"""
+    """Represents the API response."""
+
     id: str
     status: StatusEnum = Field(default=StatusEnum.pending, init=False)
     response: database.LLM_Response | None
 
     @model_validator(mode='after')
     def check_status(self) -> Self:
+        """Use the presence of a response to determine the status."""
         if self.response is not None:
             self.status = StatusEnum.completed
         return self

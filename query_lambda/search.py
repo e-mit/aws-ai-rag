@@ -1,3 +1,5 @@
+"""Interface for doing vector similarity searches on Amazon OpenSearch."""
+
 import json
 import logging
 import os

@@ -23,6 +23,7 @@ sqs = boto3.client('sqs')
 
 
 def get_main_page_urls(root_url: str, content: bytes) -> list[str]:
+    """Get a list of URLs for the 'Most read' news articles."""
     page = BeautifulSoup(content, 'html.parser')
     links = page.find_all('div',
                           attrs={'data-component': 'mostRead'}

@@ -15,6 +15,7 @@ logger = logging.getLogger()
 
 class LLM_Response(BaseModel):
     """Represents the LLM response as stored in the database."""
+
     answer: str
     article_refs: list[Any]
 
@@ -30,7 +31,7 @@ else:
 
 
 def get_expiry_timestamp() -> int:
-    """The timestamp when the database entry should expire."""
+    """Get timestamp for when the database entry should expire."""
     return int((datetime.now()
                 + timedelta(minutes=TTL_MINUTES)).timestamp())
 

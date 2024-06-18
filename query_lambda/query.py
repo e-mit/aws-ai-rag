@@ -39,7 +39,7 @@ def invoke_llm(prompt: str) -> str:
 
 
 def is_question_appropriate(query: str) -> bool:
-    """"Identify inappropriate questions (not news related)."""
+    """Identify inappropriate questions (not news related)."""
     today = datetime.now().strftime('%d %B %Y')
     ok_prompt = (f"Today is {today}. Does the following query relate to"
                  " news/occurrences from any time in the last 7 days? Answer"
