@@ -22,7 +22,7 @@ jobs:
         export LLM_LAMBDA_ARN=test
         docker run --rm --name dynamodb_test_local -d -p 8000:8000 amazon/dynamodb-local
         sleep 5
-        ./create_test_table.sh
+        ./create_test_db_table.sh
     - name: tests
       run: |
         export DB_TABLE_NAME=testTable
