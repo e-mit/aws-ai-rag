@@ -12,7 +12,7 @@ from fastapi import status, Path
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from models import LLM_Query, LLM_RequestQuery, GetStatus
+from models import LLM_Query, LLM_RequestQuery, QueryStatus
 import database
 
 logger = logging.getLogger()
@@ -77,11 +77,11 @@ def post_query(query: LLM_RequestQuery) -> dict[str, str]:
 
 @app.get("/query/{id}", status_code=status.HTTP_200_OK)
 def get_response(id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
-                 ) -> GetStatus:
+                 ) -> QueryStatus:
     """Get the query response using its id."""
     try:
         data = database.get(id)
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Query ID does not exist")
-    return GetStatus(id=id, response=data)
+    return QueryStatus(id=id, response=data)
