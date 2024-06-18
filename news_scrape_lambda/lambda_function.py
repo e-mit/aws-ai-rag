@@ -14,7 +14,7 @@ from opensearchpy import OpenSearch, RequestsHttpConnection
 import boto3
 from requests_aws4auth import AWS4Auth
 
-import sqs_event
+from . import sqs_event
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOG_LEVEL', 'DEBUG'))

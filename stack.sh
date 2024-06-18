@@ -3,7 +3,7 @@
 # A script to create a Cloudformation stack.
 
 # Define STACK_NAME, then run this script like:
-# ./stack.sh <stack name> <command> <3rd argument> <4th argument>
+# ./stack.sh <stack name> <command> <3rd argument>
 
 # Where "command" is one of the following:
 entryFuncs=("delete" "create" "update_function" "update_layer" "loglevel")
@@ -16,7 +16,7 @@ entryFuncs=("delete" "create" "update_function" "update_layer" "loglevel")
 # "loglevel": Change the lambda logging levels.
 
 # Possible 3rd arguments:
-#   "stack": Optional 3rd argument is a space-separated list
+#   "create": Optional 3rd argument is a space-separated list
 #            of parameter-overrides to pass to cloudformation
 #            deploy, which become template parameters.
 #   "loglevel": Mandatory 3rd argument is a log level string
@@ -168,9 +168,7 @@ update_function() {
     _make_names
     _delete_files
 
-    cd main_scrape_lambda
-    zip -r ../function.zip .
-    cd ..
+    zip -r function.zip main_scrape_lambda
     aws lambda update-function-code \
     --function-name $MAIN_FUNCTION_NAME \
     --zip-file fileb://function.zip &> /dev/null
@@ -179,9 +177,7 @@ update_function() {
     fi
 
     rm -f *.zip
-    cd news_scrape_lambda
-    zip -r ../function.zip .
-    cd ..
+    zip -r function.zip news_scrape_lambda
     aws lambda update-function-code \
     --function-name $NEWS_FUNCTION_NAME \
     --zip-file fileb://function.zip &> /dev/null
