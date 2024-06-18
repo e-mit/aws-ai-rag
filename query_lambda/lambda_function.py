@@ -22,7 +22,7 @@ def lambda_handler(event: Any, _context_unused: Any) -> dict[str, Any]:
     logger.debug('Event: %s', event)
 
     if not query.is_question_appropriate(event['query']):
-        return {'response': params.INAPPROPRIATE_REPLY, 'article_refs': []}
+        return {'answer': params.INAPPROPRIATE_REPLY, 'article_refs': []}
 
     dates = query.get_relevant_dates(event['query'])
 
@@ -40,9 +40,9 @@ def lambda_handler(event: Any, _context_unused: Any) -> dict[str, Any]:
     # Reject low scoring hits
     hits = [x for x in hits if x.score >= params.SCORE_THRESHOLD]
     if not hits:
-        return {'response': params.NO_RESULTS_REPLY, 'article_refs': []}
+        return {'answer': params.NO_RESULTS_REPLY, 'article_refs': []}
 
     combined_prompt = query.create_combined_prompt(event['query'], hits)
     model_response = query.invoke_llm(combined_prompt)
-    return {'response': model_response,
+    return {'answer': model_response,
             'article_refs': [x.get_article_summary() for x in hits]}

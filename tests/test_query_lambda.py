@@ -13,20 +13,20 @@ def test_success():
     result = lambda_function.lambda_handler(
         {'query': 'Summarize the UK news yesterday'}, None)
     print(result)  # NB: enable using: pytest -v -s tests
-    assert len(result['response']) > 0
-    assert isinstance(result['response'], str)
+    assert len(result['answer']) > 0
+    assert isinstance(result['answer'], str)
     assert len(result['article_refs']) >= 1
 
 
 def test_inappropriate():
     result = lambda_function.lambda_handler(
         {'query': 'where can i buy pizza?'}, None)
-    assert result['response'] == params.INAPPROPRIATE_REPLY
+    assert result['answer'] == params.INAPPROPRIATE_REPLY
     assert len(result['article_refs']) == 0
 
 
 def test_no_results():
     result = lambda_function.lambda_handler(
         {'query': 'What was the news in mongolia in 1975?'}, None)
-    assert result['response'] == params.NO_RESULTS_REPLY
+    assert result['answer'] == params.NO_RESULTS_REPLY
     assert len(result['article_refs']) == 0
