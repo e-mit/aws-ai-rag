@@ -50,15 +50,15 @@ def test_post_query_get_response():
     id = response.json()['id']
     assert isinstance(id, str)
     app_main.lambda_client.invoke.assert_called_once()
-    response = models.LLM_Response(answer="the answer",
-                                   article_refs=["a", "b"])
+    response = database.LLM_Response(answer="the answer",
+                                     article_refs=["a", "b"])
     database.update(id, response)
     response2 = client.get(f"/query/{id}")
     assert response2.status_code == 200
     data = response2.json()
     assert data['id'] == id
     assert data['status'] == 'completed'
-    assert (models.LLM_Response(
+    assert (database.LLM_Response(
         **data['response']).model_dump_json() == response.model_dump_json())
 
 

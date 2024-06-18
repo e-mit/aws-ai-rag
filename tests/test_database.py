@@ -31,8 +31,8 @@ def test_get_completed():
     id1 = str(uuid.uuid4().int)
     database.add_new(id1)
     assert database.get(id1) is None
-    data = models.LLM_Response(answer="this is the answer",
-                               article_refs=["ref1", "ref2"])
+    data = database.LLM_Response(answer="this is the answer",
+                                 article_refs=["ref1", "ref2"])
     database.update(id1, data)
     get_data = database.get(id1)
     assert get_data is not None

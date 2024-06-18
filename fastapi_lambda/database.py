@@ -1,14 +1,23 @@
+"""Database interface for storing query results."""
+
 import logging
 import os
 from datetime import datetime, timedelta
+from typing import Any
 
 import boto3
-
-from models import LLM_Response
+from pydantic import BaseModel
 
 DB_TABLE_NAME = os.environ['DB_TABLE_NAME']
 TTL_MINUTES = 30
 logger = logging.getLogger()
+
+
+class LLM_Response(BaseModel):
+    """Represents the LLM response as stored in the database."""
+    answer: str
+    article_refs: list[Any]
+
 
 if os.environ.get('TEST'):
     logger.info('Local test mode: using database %s', DB_TABLE_NAME)
