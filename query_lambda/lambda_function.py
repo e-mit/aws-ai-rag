@@ -44,12 +44,12 @@ def process_query(event: Any, _context_unused: Any) -> LlmResponse:
     hits = [x for x in hits if x.score >= params.SCORE_THRESHOLD]
     if not hits:
         return LlmResponse(answer=params.NO_RESULTS_REPLY,
-                            article_refs=[])
+                           article_refs=[])
 
     combined_prompt = query.create_combined_prompt(event['query'], hits)
     model_response = query.invoke_llm(combined_prompt)
     return LlmResponse(answer=model_response,
-                        article_refs=[x.get_article_summary() for x in hits])
+                       article_refs=[x.get_article_summary() for x in hits])
 
 
 def lambda_handler(event: Any, _context_unused: Any) -> None:

@@ -14,11 +14,12 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
+        aws-region: ${{ vars.AWS_REGION }}
     - name: Run dynamoDB test container
       run: |
         export DB_TABLE_NAME=testTable
         export TEST=true
+        export LLM_LAMBDA_ARN=test
         docker run --rm --name dynamodb_test_local -d -p 8000:8000 amazon/dynamodb-local
         sleep 5
         ./create_test_table.sh
@@ -26,7 +27,8 @@ jobs:
       run: |
         export DB_TABLE_NAME=testTable
         export TEST=true
-        python -m pytest function/app tests -p no:cacheprovider
+        export LLM_LAMBDA_ARN=test
+        python -m pytest tests -p no:cacheprovider
     - name: Save result
       if: always()
       uses: ./.github/actions/save-workflow-result

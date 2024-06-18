@@ -59,7 +59,7 @@ def id_is_in_database(client: OpenSearch, index: str, _id: str) -> bool:
     results = client.search(
         body=query_match,
         index=index,
-        _source="false",
+        _source="false",  # type: ignore
     )
     nhits = len(results["hits"]["hits"])
     if nhits > 1:
@@ -76,7 +76,8 @@ def delete_old_documents(client: OpenSearch, index: str,
         "size": MAXIMUM_DELETE_BATCH_SIZE,
         "query": {"range": {"time_read": {"lt": expiry_timestamp}}}
     }
-    client.delete_by_query(index=index, body=query_body_time, refresh=True)
+    client.delete_by_query(index=index, body=query_body_time,
+                           refresh=True)  # type: ignore
 
 
 def apply_embedding(embed_client, embed_model: str,

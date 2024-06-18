@@ -5,3 +5,4 @@ omit =
     old_examples/*
     package/*
     create_oss_index.py
+    */__init__.py

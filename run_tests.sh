@@ -21,4 +21,4 @@ python -m mypy . --explicit-package-bases --exclude 'tests/' --exclude 'venv/' -
 python -m pycodestyle *.py fastapi_lambda main_scrape_lambda news_scrape_lambda query_lambda
 python -m pydocstyle *.py fastapi_lambda main_scrape_lambda news_scrape_lambda query_lambda --ignore=D107,D203,D213
 python -m pylint *.py fastapi_lambda main_scrape_lambda news_scrape_lambda query_lambda
-python -m pyright function
+python -m pyright *.py fastapi_lambda main_scrape_lambda news_scrape_lambda query_lambda

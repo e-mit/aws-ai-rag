@@ -5,10 +5,11 @@ from unittest.mock import Mock
 from typing import Any
 
 from fastapi.testclient import TestClient
+from mangum import Mangum
 
 sys.path.append("fastapi_lambda")
 
-from fastapi_lambda import database, app_main, models  # noqa
+from fastapi_lambda import database, app_main, models, lambda_function  # noqa
 
 client = TestClient(app_main.app)
 
@@ -51,7 +52,7 @@ def test_post_query_get_response():
     assert isinstance(id, str)
     app_main.lambda_client.invoke.assert_called_once()
     response = database.LlmResponse(answer="the answer",
-                                     article_refs=["a", "b"])
+                                    article_refs=["a", "b"])
     database.update(id, response)
     response2 = client.get(f"/query/{id}")
     assert response2.status_code == 200
@@ -66,3 +67,7 @@ def test_get_bad_id():
     id = '999'
     response = client.get(f"/query/{id}")
     assert response.status_code == 404
+
+
+def test_module_load():
+    assert isinstance(lambda_function.lambda_handler, Mangum)
