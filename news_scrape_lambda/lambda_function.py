@@ -101,13 +101,15 @@ def scrape_news_page(url: str, content: bytes, id: str,
 
     paragraphs_1_2_3 = []
     try:
-        for div in page.find_all('div', {'class': 'ssrcss-7uxr49-RichTextContainer e5tfeyi1'}):
-            for p in div.find_all('p', {'class': 'ssrcss-1q0x1qg-Paragraph e1jhz7w10'}):
+        for div in page.find_all(
+                'div', {'class': 'ssrcss-7uxr49-RichTextContainer e5tfeyi1'}):
+            for p in div.find_all(
+                    'p', {'class': 'ssrcss-1q0x1qg-Paragraph e1jhz7w10'}):
                 if p.contents and p.contents[0].name in [None, 'b']:
                     paragraphs_1_2_3.append(p.text.strip())
                     if len(paragraphs_1_2_3) == 3:
                         raise Exception("Break loop")
-    except Exception:
+    except Exception:  # nosec
         pass
 
     info = {
@@ -157,7 +159,8 @@ def lambda_handler(event: dict[str, Any], _context_unused: Any) -> None:
             if response.status_code != 200:
                 raise ValueError("Bad status code")
 
-            info = scrape_news_page(url_dict['url'], response.content, id, time_now)
+            info = scrape_news_page(url_dict['url'], response.content,
+                                    id, time_now)
 
             oss_client.index(
                 index=INDEX_NAME,
