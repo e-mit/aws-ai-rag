@@ -1,0 +1,19 @@
+name: mypy
+
+on: [push, workflow_dispatch]
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare test environment
+        uses: ./.github/actions/prepare-test-environment
+      - name: mypy
+        run: python -m mypy . --explicit-package-bases --exclude 'tests/' --exclude 'venv/' --exclude 'package/' --exclude 'old_examples/'
+      - name: Save result
+        if: always()
+        uses: ./.github/actions/save-workflow-result
+        with:
+          result: ${{ job.status }}

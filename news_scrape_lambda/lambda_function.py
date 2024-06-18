@@ -12,7 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 from opensearchpy import OpenSearch, RequestsHttpConnection
 import boto3
-from requests_aws4auth import AWS4Auth
+from requests_aws4auth import AWS4Auth  # type: ignore
 
 from . import sqs_event
 
@@ -33,6 +33,8 @@ SERVICE = 'es'
 
 embedding_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
 credentials = boto3.Session().get_credentials()
+if credentials is None:
+    raise PermissionError("Could not get session credentials.")
 awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    SERVICE, session_token=credentials.token)
 
@@ -89,6 +91,8 @@ def scrape_news_page(url: str, content: bytes, id: str,
                      time_now: datetime.datetime) -> dict['str', Any]:
     """Extract the useful data from the news page."""
     page = BeautifulSoup(content, 'html.parser')
+    if page.head is None or page.head.script is None:
+        raise ValueError("Head format is incorrect.")
     json_data = json.loads(page.head.script.text)
 
     title = json_data['headline'].strip()

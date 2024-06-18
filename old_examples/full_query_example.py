@@ -40,6 +40,8 @@ EMBEDDING_MODEL = {'id': "amazon.titan-embed-image-v1", 'dimension': 1024}
 embedding_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
 SERVICE = 'es'
 credentials = boto3.Session().get_credentials()
+if credentials is None:
+    raise PermissionError("Could not get session credentials.")
 awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    SERVICE, session_token=credentials.token)
 

@@ -4,7 +4,7 @@ import os
 
 from opensearchpy import OpenSearch, RequestsHttpConnection
 import boto3
-from requests_aws4auth import AWS4Auth
+from requests_aws4auth import AWS4Auth  # type: ignore
 
 OSS_NODE_URL = os.environ['OSS_NODE_URL']
 AWS_REGION = os.environ['AWS_REGION']
@@ -15,6 +15,8 @@ INDEX_NAME = "news"  # must be lower case
 
 SERVICE = 'es'
 credentials = boto3.Session().get_credentials()
+if credentials is None:
+    raise PermissionError("Could not get session credentials.")
 awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    SERVICE, session_token=credentials.token)
 
@@ -54,8 +56,8 @@ index_body = {
   }
 }
 
-if index_body['mappings']['properties']['embedding'][
+if index_body['mappings']['properties']['embedding'][  # type: ignore
         'method']['engine'] == 'nmslib':
-    index_body['settings']['index']['knn.algo_param.ef_search'] = 100
+    index_body['settings']['index']['knn.algo_param.ef_search'] = 100  # type: ignore
 
 response = client.indices.create(index=INDEX_NAME, body=index_body)

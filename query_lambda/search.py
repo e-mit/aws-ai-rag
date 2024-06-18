@@ -6,7 +6,7 @@ from datetime import datetime, date
 
 import boto3
 from opensearchpy import OpenSearch, RequestsHttpConnection
-from requests_aws4auth import AWS4Auth
+from requests_aws4auth import AWS4Auth  # type: ignore
 
 from . import params
 from .search_models import SearchHit, Source

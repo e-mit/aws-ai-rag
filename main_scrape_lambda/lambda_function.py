@@ -46,7 +46,7 @@ def lambda_handler(event: Any, _context_unused: Any) -> None:
     # Send each url individually
     for url in urls:
         try:
-            response = sqs.send_message(QueueUrl=SQS_URL,
-                                        MessageBody=json.dumps({'url': url}))
+            sqs.send_message(QueueUrl=SQS_URL,
+                             MessageBody=json.dumps({'url': url}))
         except Exception:
             logger.error('Send SQS message failed with %s %s', SQS_URL, url)

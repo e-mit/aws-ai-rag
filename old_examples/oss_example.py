@@ -17,6 +17,8 @@ embedding_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
 
 service = 'es'
 credentials = boto3.Session().get_credentials()
+if credentials is None:
+    raise PermissionError("Could not get session credentials.")
 awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    service, session_token=credentials.token)
 
