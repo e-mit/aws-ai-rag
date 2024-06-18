@@ -36,24 +36,24 @@ def get_expiry_timestamp() -> int:
                 + timedelta(minutes=TTL_MINUTES)).timestamp())
 
 
-def add_new(id: str) -> None:
+def add_new(_id: str) -> None:
     """Store the id in the database, without replacement."""
     dynamo_table.put_item(
-        Item={'id': id, 'expiryTimestamp': get_expiry_timestamp()},
+        Item={'id': _id, 'expiryTimestamp': get_expiry_timestamp()},
         ConditionExpression='attribute_not_exists(id)')
 
 
-def update(id: str, data: LlmResponse) -> None:
+def update(_id: str, data: LlmResponse) -> None:
     """Store the data in the database, replacing previous record."""
-    dynamo_table.put_item(Item={'id': id,
+    dynamo_table.put_item(Item={'id': _id,
                                 'expiryTimestamp': get_expiry_timestamp(),
                                 'reply': data.model_dump_json()},
                           ConditionExpression='attribute_exists(id)')
 
 
-def get(id: str) -> LlmResponse | None:
+def get(_id: str) -> LlmResponse | None:
     """Get data, or None if pending; raise KeyError if not found."""
-    data = dynamo_table.get_item(Key={"id": id},
+    data = dynamo_table.get_item(Key={"id": _id},
                                  ProjectionExpression='reply')
     if 'Item' not in data:
         raise KeyError("ID not found.")

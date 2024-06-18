@@ -50,11 +50,11 @@ oss_client = OpenSearch(
         )
 
 
-def id_is_in_database(client: OpenSearch, index: str, id: str) -> bool:
+def id_is_in_database(client: OpenSearch, index: str, _id: str) -> bool:
     """Find out if the id is already in the database."""
     query_match = {
         "size": 2,  # Limits number of hits returned
-        "query": {"ids": {"values": [id]}}
+        "query": {"ids": {"values": [_id]}}
     }
     results = client.search(
         body=query_match,
@@ -63,7 +63,7 @@ def id_is_in_database(client: OpenSearch, index: str, id: str) -> bool:
     )
     nhits = len(results["hits"]["hits"])
     if nhits > 1:
-        raise KeyError(f"Duplicate ID in database: {id}")
+        raise KeyError(f"Duplicate ID in database: {_id}")
     return nhits != 0
 
 
@@ -87,7 +87,7 @@ def apply_embedding(embed_client, embed_model: str,
     return json.loads(response["body"].read())["embedding"]
 
 
-def scrape_news_page(url: str, content: bytes, id: str,
+def scrape_news_page(url: str, content: bytes, _id: str,
                      time_now: datetime.datetime) -> dict['str', Any]:
     """Extract the useful data from the news page."""
     page = BeautifulSoup(content, 'html.parser')
@@ -117,7 +117,7 @@ def scrape_news_page(url: str, content: bytes, id: str,
         pass
 
     info = {
-        'id': id,
+        'id': _id,
         'title': title,
         'subtitle': subtitle,
         'url': url,
@@ -157,19 +157,19 @@ def lambda_handler(event: dict[str, Any], _context_unused: Any) -> None:
             logger.debug("Extracted url: %s", url_dict['url'])
 
             time_now = datetime.datetime.now()
-            id = f"{pathlib.Path(url_dict['url']).stem}_{time_now.date()}"
+            _id = f"{pathlib.Path(url_dict['url']).stem}_{time_now.date()}"
 
             response = requests.get(url_dict['url'], timeout=GET_TIMEOUT_SEC)
             if response.status_code != 200:
                 raise ValueError("Bad status code")
 
             info = scrape_news_page(url_dict['url'], response.content,
-                                    id, time_now)
+                                    _id, time_now)
 
             oss_client.index(
                 index=INDEX_NAME,
                 body=info,
-                id=id,
+                id=_id,
                 refresh=True  # type: ignore
             )
 

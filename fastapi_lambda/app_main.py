@@ -61,26 +61,26 @@ async def version() -> APIVersion:
 @app.post("/query", status_code=status.HTTP_201_CREATED)
 def post_query(query: LlmRequestQuery) -> dict[str, str]:
     """Start a new query."""
-    id = str(uuid.uuid4().int)
-    database.add_new(id)
+    _id = str(uuid.uuid4().int)
+    database.add_new(_id)
     response = lambda_client.invoke(
         FunctionName=LLM_LAMBDA_ARN,
         InvocationType='Event',
-        Payload=LlmQuery(**query.model_dump(), id=id).model_dump_json()
+        Payload=LlmQuery(**query.model_dump(), id=_id).model_dump_json()
     )
     if 'FunctionError' in response:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="The LLM service failed")
-    return {'id': id}
+    return {'id': _id}
 
 
-@app.get("/query/{id}", status_code=status.HTTP_200_OK)
-def get_response(id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
+@app.get("/query/{query_id}", status_code=status.HTTP_200_OK)
+def get_response(query_id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
                  ) -> QueryStatus:
     """Get the query response using its id."""
     try:
-        data = database.get(id)
+        data = database.get(query_id)
     except KeyError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Query ID does not exist") from e
-    return QueryStatus(id=id, response=data)
+    return QueryStatus(id=query_id, response=data)
