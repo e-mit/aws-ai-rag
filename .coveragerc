@@ -1,0 +1,7 @@
+[run]
+omit =
+    tests/*
+    venv/*
+    old_examples/*
+    package/*
+    create_oss_index.py

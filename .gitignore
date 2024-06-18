@@ -5,3 +5,4 @@ __pycache__
 package
 out.yml
 *.zip
+.coverage

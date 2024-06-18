@@ -1,0 +1,52 @@
+name: coverage
+
+on: [push, workflow_dispatch]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Prepare test environment
+      uses: ./.github/actions/prepare-test-environment
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+    - name: Run dynamoDB test container
+      run: |
+        export DB_TABLE_NAME=testTable
+        export TEST=true
+        export LLM_LAMBDA_ARN=test
+        docker run --rm --name dynamodb_test_local -d -p 8000:8000 amazon/dynamodb-local
+        sleep 5
+        ./create_test_db_table.sh
+    - name: Coverage percentage check
+      run: |
+        export DB_TABLE_NAME=testTable
+        export TEST=true
+        export LLM_LAMBDA_ARN=test
+        target_coverage_pc=80
+        coverage_pc=$(python -m pytest --cov=. tests -p no:cacheprovider | awk '$1 == "TOTAL" {print $NF+0}')
+        echo Test coverage = $coverage_pc%
+        if [ $coverage_pc -gt $target_coverage_pc ]
+        then
+          color="34D058"
+        else
+          color="red"
+        fi
+        curl -L \
+          -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GIST_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/gists/9df92671b4e2859b1e75cf762121b73f \
+          -d '{"files": {"${{ github.event.repository.name }}.json": {"content": "{\"schemaVersion\": 1, \"label\":\"coverage\", \"message\":\"'$coverage_pc'%\", \"color\":\"'$color'\", \"namedLogo\":\"github\", \"labelColor\":\"444D56\"}"}}}'
+        exit $(( coverage_pc < target_coverage_pc ))
+    - name: Save result
+      if: always()
+      uses: ./.github/actions/save-workflow-result
+      with:
+        result: ${{ job.status }}
