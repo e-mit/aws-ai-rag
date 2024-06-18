@@ -58,6 +58,7 @@ index_body = {
 
 if index_body['mappings']['properties']['embedding'][  # type: ignore
         'method']['engine'] == 'nmslib':
-    index_body['settings']['index']['knn.algo_param.ef_search'] = 100  # type: ignore
+    index_body['settings']['index'][
+        'knn.algo_param.ef_search'] = 100  # type: ignore
 
 response = client.indices.create(index=INDEX_NAME, body=index_body)

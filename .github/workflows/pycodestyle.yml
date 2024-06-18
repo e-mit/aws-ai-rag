@@ -1,0 +1,25 @@
+name: pycodestyle
+
+on: [push, workflow_dispatch]
+
+jobs:
+  pycodestyle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install pycodestyle
+      - name: pycodestyle
+        run: python -m pycodestyle *.py fastapi_lambda main_scrape_lambda news_scrape_lambda query_lambda
+      - name: Save result
+        if: always()
+        uses: ./.github/actions/save-workflow-result
+        with:
+          result: ${{ job.status }}
+
