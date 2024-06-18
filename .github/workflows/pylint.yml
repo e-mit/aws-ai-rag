@@ -1,0 +1,20 @@
+name: pylint
+
+on: [push, workflow_dispatch]
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare test environment
+        uses: ./.github/actions/prepare-test-environment
+      - name: pylint
+        run: python -m pylint function
+      - name: Save result
+        if: always()
+        uses: ./.github/actions/save-workflow-result
+        with:
+          result: ${{ job.status }}
+

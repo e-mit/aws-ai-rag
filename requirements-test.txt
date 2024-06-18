@@ -5,3 +5,15 @@ requests_mock
 pytest
 boto3-stubs[essential]
 aws-requests-auth-stubs
+pycodestyle
+pydocstyle
+bandit
+pytest-cov
+flake8
+mypy
+pylint
+pyright
+httpx
+python-dateutil
+types-python-dateutil
+requests

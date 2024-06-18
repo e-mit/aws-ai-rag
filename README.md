@@ -1,5 +1,17 @@
 # AWS AI RAG
 
+
+![tests](https://github.com/e-mit/aws-ai-rag/actions/workflows/tests.yml/badge.svg)
+![coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/e-mit/9df92671b4e2859b1e75cf762121b73f/raw/aws-ai-rag.json)
+![flake8](https://github.com/e-mit/aws-ai-rag/actions/workflows/flake8.yml/badge.svg)
+![mypy](https://github.com/e-mit/aws-ai-rag/actions/workflows/mypy.yml/badge.svg)
+![pycodestyle](https://github.com/e-mit/aws-ai-rag/actions/workflows/pycodestyle.yml/badge.svg)
+![pydocstyle](https://github.com/e-mit/aws-ai-rag/actions/workflows/pydocstyle.yml/badge.svg)
+![pylint](https://github.com/e-mit/aws-ai-rag/actions/workflows/pylint.yml/badge.svg)
+![pyright](https://github.com/e-mit/aws-ai-rag/actions/workflows/pyright.yml/badge.svg)
+![bandit](https://github.com/e-mit/aws-ai-rag/actions/workflows/bandit.yml/badge.svg)
+
+
 Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date news.
 
 **Currently incomplete**
