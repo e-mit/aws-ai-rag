@@ -14,8 +14,15 @@ def test_add_bad():
 
 
 def test_get_nonexistent():
-    with pytest.raises(KeyError):
+    with pytest.raises(Exception):
         database.get("12345")
+
+
+def test_add_twice():
+    id = str(uuid.uuid4().int)
+    database.add_new(id)
+    with pytest.raises(Exception):
+        database.add_new(id)
 
 
 def test_get_pending():
@@ -37,3 +44,10 @@ def test_get_completed():
     get_data = database.get(id1)
     assert get_data is not None
     assert data.model_dump_json() == get_data.model_dump_json()
+
+
+def test_update_nonexistent():
+    data = database.LLM_Response(answer="this is the answer",
+                                 article_refs=["ref1", "ref2"])
+    with pytest.raises(Exception):
+        database.update('876543', data)

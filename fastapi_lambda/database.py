@@ -36,26 +36,27 @@ def get_expiry_timestamp() -> int:
 
 
 def add_new(id: str) -> None:
-    """Store the id in the database."""
+    """Store the id in the database, without replacement."""
     dynamo_table.put_item(
-        Item={'id': id, 'expiryTimestamp': get_expiry_timestamp()})
+        Item={'id': id, 'expiryTimestamp': get_expiry_timestamp()},
+        ConditionExpression='attribute_not_exists(id)')
 
 
 def update(id: str, data: LLM_Response) -> None:
-    """Store the data in the database."""
+    """Store the data in the database, replacing previous record."""
     dynamo_table.put_item(Item={'id': id,
                                 'expiryTimestamp': get_expiry_timestamp(),
-                                **data.model_dump()})
+                                'reply': data.model_dump_json()},
+                          ConditionExpression='attribute_exists(id)')
 
 
 def get(id: str) -> LLM_Response | None:
     """Get data, or None if pending; raise KeyError if not found."""
-    data = dynamo_table.get_item(
-            Key={"id": id},
-            ProjectionExpression=",".join(LLM_Response.model_fields.keys())
-        )
+    data = dynamo_table.get_item(Key={"id": id},
+                                 ProjectionExpression='reply')
     if 'Item' not in data:
         raise KeyError("ID not found.")
     if not data.get("Item"):
         return None
-    return LLM_Response(**data.get("Item"))  # type: ignore
+    return LLM_Response.model_validate_json(
+        data.get("Item")['reply'])  # type: ignore
