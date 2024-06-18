@@ -63,7 +63,6 @@ def post_query(query: LlmRequestQuery) -> dict[str, str]:
     """Start a new query."""
     id = str(uuid.uuid4().int)
     database.add_new(id)
-    # TODO: add DLQ for failed lambda invocations
     response = lambda_client.invoke(
         FunctionName=LLM_LAMBDA_ARN,
         InvocationType='Event',
@@ -81,7 +80,7 @@ def get_response(id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
     """Get the query response using its id."""
     try:
         data = database.get(id)
-    except KeyError:
+    except KeyError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Query ID does not exist")
+                            detail="Query ID does not exist") from e
     return QueryStatus(id=id, response=data)

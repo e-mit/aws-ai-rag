@@ -8,6 +8,7 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 import boto3
+from botocore.exceptions import ClientError
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
 ROOT_URL = 'https://www.bbc.co.uk'
@@ -49,5 +50,5 @@ def lambda_handler(event: Any, _context_unused: Any) -> None:
         try:
             sqs.send_message(QueueUrl=SQS_URL,
                              MessageBody=json.dumps({'url': url}))
-        except Exception:
+        except ClientError:
             logger.error('Send SQS message failed with %s %s', SQS_URL, url)
