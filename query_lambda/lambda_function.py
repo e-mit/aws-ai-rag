@@ -24,7 +24,7 @@ def process_query(event: Any, _context_unused: Any) -> LlmResponse:
     """Prepare the RAG query, send to the LLM, and get an answer."""
     if not query.is_question_appropriate(event['query']):
         return LlmResponse(answer=params.INAPPROPRIATE_REPLY,
-                            article_refs=[])
+                           article_refs=[])
 
     dates = query.get_relevant_dates(event['query'])
 

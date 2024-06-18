@@ -26,6 +26,10 @@ def test_get_no_dates():
     assert query.get_relevant_dates("strawberry bicycle") == []
 
 
+def test_get_no_dates2():
+    assert query.get_relevant_dates("What was the UK news 10 days ago?") == []
+
+
 def test_get_todays_date():
     assert query.get_relevant_dates(
         "What is the news today?") == [datetime.now().date()]

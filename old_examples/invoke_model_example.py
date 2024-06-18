@@ -2,6 +2,7 @@
 import json
 from pprint import pprint
 from typing import Any
+from datetime import datetime, timedelta
 
 import boto3
 from botocore.exceptions import ClientError
@@ -23,6 +24,13 @@ prompt = (f"Today is {today}. Given the following query, what"
           " of news articles? Return only the date(s), as a Python array of strings. Answer"
           " 'None' if no dates are relevant."
           f" Query: '{query}'")
+
+today = datetime.now().strftime('%d %B %Y')
+earliest = (datetime.now() - timedelta(days=7)).strftime('%d %B %Y')
+query = 'What happened in the USA yesterday?'
+prompt = (f"Does the following query relate to news events"
+          f" which happened after {earliest}? The date today is {today}. Answer"
+          f" yes or no and explain why. Do not return any other text. Query: '{query}'")
 
 # Format the request payload using the model's native structure.
 if "titan" in model_id:

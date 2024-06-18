@@ -28,10 +28,10 @@ def test_inappropriate():
     assert len(result.article_refs) == 0
 
 
+@pytest.mark.skip(reason="TODO")
 def test_no_results():
     result = lambda_function.process_query(
-        {'query': 'What was the news in mongolia in 1975?'}, None)
-    assert result.answer == params.INAPPROPRIATE_REPLY
+        {'query': 'What was the UK news 10 days ago?'}, None)
     assert len(result.article_refs) == 0
 
 

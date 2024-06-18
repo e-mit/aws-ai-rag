@@ -20,5 +20,5 @@ MAX_OUTPUT_TOKENS = 1000
 
 # Responses
 INAPPROPRIATE_REPLY = ("Please ask a question which relates"
-                       " to recent news (the last 7 days).")
+                       " to recent news events.")
 NO_RESULTS_REPLY = "Sorry, I couldn't find any relevant news articles."
