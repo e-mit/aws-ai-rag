@@ -45,4 +45,4 @@ class SearchHit(BaseModel):
     def get_article_summary(self) -> dict[str, Any]:
         """Get just the news-article-related information."""
         return {k: getattr(self.source, k) for k in
-                SourceSummary.model_fields.keys()}
+                SourceSummary.model_fields}

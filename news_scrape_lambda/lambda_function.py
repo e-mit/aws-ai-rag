@@ -19,13 +19,13 @@ from . import sqs_event
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOG_LEVEL', 'DEBUG'))
 
-GET_TIMEOUT_SEC = float(os.getenv('GET_TIMEOUT_SEC', 5))
+GET_TIMEOUT_SEC = float(os.getenv('GET_TIMEOUT_SEC', '5'))
 OSS_CLUSTER_URL = os.getenv('OSS_CLUSTER_URL', "https://example.com")
 if OSS_CLUSTER_URL[0:4] != 'http':
     OSS_CLUSTER_URL = 'https://' + OSS_CLUSTER_URL
 AWS_REGION = os.getenv('AWS_REGION', "eu-west-3")
 MAXIMUM_DELETE_BATCH_SIZE = 100
-DOCUMENT_EXPIRY_TIME_DAYS = int(os.getenv('DOCUMENT_EXPIRY_TIME_DAYS', 8))
+DOCUMENT_EXPIRY_TIME_DAYS = int(os.getenv('DOCUMENT_EXPIRY_TIME_DAYS', '8'))
 EMBEDDING_MODEL_ID = "amazon.titan-embed-image-v1"
 EMBEDDING_DIMENSION = 1024
 INDEX_NAME = "news"
@@ -63,7 +63,7 @@ def id_is_in_database(client: OpenSearch, index: str, id: str) -> bool:
     )
     nhits = len(results["hits"]["hits"])
     if nhits > 1:
-        raise Exception(f"Duplicate ID in database: {id}")
+        raise KeyError(f"Duplicate ID in database: {id}")
     return nhits != 0
 
 
@@ -112,8 +112,8 @@ def scrape_news_page(url: str, content: bytes, id: str,
                 if p.contents and p.contents[0].name in [None, 'b']:
                     paragraphs_1_2_3.append(p.text.strip())
                     if len(paragraphs_1_2_3) == 3:
-                        raise Exception("Break loop")
-    except Exception:  # nosec
+                        raise StopIteration("Break loop")
+    except StopIteration:  # nosec
         pass
 
     info = {
@@ -170,7 +170,7 @@ def lambda_handler(event: dict[str, Any], _context_unused: Any) -> None:
                 index=INDEX_NAME,
                 body=info,
                 id=id,
-                refresh=True
+                refresh=True  # type: ignore
             )
 
     except Exception as e:

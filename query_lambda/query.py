@@ -67,7 +67,7 @@ def get_relevant_dates(query: str) -> list[date]:
 
     try:
         dates = [datetime.strptime(x, "%Y-%m-%d").date() for x in date_strings]
-    except Exception:
+    except ValueError:
         logger.error('Could not extract dates from: %s', date_strings)
         return []
 

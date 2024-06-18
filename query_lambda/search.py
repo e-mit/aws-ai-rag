@@ -75,7 +75,7 @@ class DateFilteredSearch(Search):
     """Do a vector similarity search, also filtering by date range."""
 
     def __init__(self, query: str, start_day: date, end_day: date):
-        self.query = query
+        super().__init__(query)
         self.t1 = datetime.combine(start_day, datetime.min.time())
         self.t2 = datetime.combine(end_day, datetime.max.time())
 
