@@ -23,7 +23,7 @@ def test_question_appropriate():
 
 
 def test_get_no_dates():
-    assert query.get_relevant_dates("strawberry bicycle") is None
+    assert query.get_relevant_dates("strawberry bicycle") == []
 
 
 def test_get_todays_date():

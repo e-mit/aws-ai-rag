@@ -40,19 +40,21 @@ def invoke_llm(prompt: str) -> str:
 
 def is_question_appropriate(query: str) -> bool:
     """"Identify inappropriate questions (not news related)."""
-    ok_prompt = ("Does the following query relate to the news? Answer yes"
-                 f" or no. Do not return any other text. Query: '{query}'")
+    today = datetime.now().strftime('%d %B %Y')
+    ok_prompt = (f"Today is {today}. Does the following query relate to"
+                 " news/occurrences from any time in the last 7 days? Answer"
+                 f" yes or no. Do not return any other text. Query: '{query}'")
     ok_response = invoke_llm(ok_prompt)
     return ok_response.lower() == "yes"
 
 
-def get_relevant_dates(query: str) -> list[date] | None:
+def get_relevant_dates(query: str) -> list[date]:
     """Find which dates, if any, are relevant to the query."""
     today = datetime.now().strftime('%d %B %Y')
     date_prompt = (
          f"Today is {today}. Given the following query, what"
          " date or dates are relevant when searching a database"
-         " of news articles? Return the date(s), as a Python"
+         " of news articles? Return up to 7 dates, as a Python"
          " list of strings, or return 'null' if no dates are"
          " relevant. Do not return any other text."
          f" Query: '{query}'")
@@ -61,9 +63,14 @@ def get_relevant_dates(query: str) -> list[date] | None:
     date_strings = json.loads(date_response.replace("'", '"'))
 
     if not date_strings or date_strings == ['null']:
-        return None
+        return []
 
-    dates = [datetime.strptime(x, "%Y-%m-%d").date() for x in date_strings]
+    try:
+        dates = [datetime.strptime(x, "%Y-%m-%d").date() for x in date_strings]
+    except Exception:
+        logger.error('Could not extract dates from: %s', date_strings)
+        return []
+
     expiry_date = (datetime.now().date()
                    - timedelta(days=params.EXPIRY_PERIOD_DAYS))
     return [x for x in dates if x >= expiry_date]

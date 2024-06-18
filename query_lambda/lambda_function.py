@@ -28,7 +28,8 @@ def process_query(event: Any, _context_unused: Any) -> LLM_Response:
 
     dates = query.get_relevant_dates(event['query'])
 
-    if dates is None:
+    if not dates:
+        # Do a search without date filtering
         hits = Search(event['query']).run()
     else:
         # Do a separate search for each day, and keep only the best results.

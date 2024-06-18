@@ -31,7 +31,7 @@ def test_inappropriate():
 def test_no_results():
     result = lambda_function.process_query(
         {'query': 'What was the news in mongolia in 1975?'}, None)
-    assert result.answer == params.NO_RESULTS_REPLY
+    assert result.answer == params.INAPPROPRIATE_REPLY
     assert len(result.article_refs) == 0
 
 

@@ -19,5 +19,6 @@ TOP_K = 250
 MAX_OUTPUT_TOKENS = 1000
 
 # Responses
-INAPPROPRIATE_REPLY = "Please ask a question which relates to the news."
+INAPPROPRIATE_REPLY = ("Please ask a question which relates"
+                       " to recent news (the last 7 days).")
 NO_RESULTS_REPLY = "Sorry, I couldn't find any relevant news articles."
