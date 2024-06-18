@@ -4,13 +4,13 @@ import logging
 import os
 from typing import Any
 
-import params
-import query
-from search import Search, DateFilteredSearch
-from search_models import SearchHit
+from . import params
+from . import query
+from .search import Search, DateFilteredSearch
+from .search_models import SearchHit
 
-import database
-from database import LLM_Response
+from . import database
+from .database import LLM_Response
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG')
 AWS_REGION = os.environ['AWS_REGION']

@@ -5,7 +5,7 @@ from typing_extensions import Self
 
 from pydantic import BaseModel, Field, model_validator
 
-import database
+from . import database
 
 
 class LLM_RequestQuery(BaseModel):

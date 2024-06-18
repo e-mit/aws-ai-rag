@@ -12,8 +12,8 @@ from fastapi import status, Path
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from models import LLM_Query, LLM_RequestQuery, QueryStatus
-import database
+from .models import LLM_Query, LLM_RequestQuery, QueryStatus
+from . import database
 
 logger = logging.getLogger()
 

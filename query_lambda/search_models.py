@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, field_validator, HttpUrl, Field
 
-import params
+from . import params
 
 
 class SourceSummary(BaseModel):

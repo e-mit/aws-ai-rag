@@ -8,8 +8,8 @@ from datetime import datetime, date, timedelta
 
 import boto3
 
-from search_models import SearchHit
-import params
+from .search_models import SearchHit
+from . import params
 
 logger = logging.getLogger()
 AWS_REGION = os.environ['AWS_REGION']
