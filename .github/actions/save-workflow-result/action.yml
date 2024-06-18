@@ -1,0 +1,21 @@
+name: save-workflow-result
+description: "Save a string which indicates whether the workflow passed."
+
+inputs:
+   result:
+     required: true
+     description: "job.status of the calling workflow (str = success, failure, cancelled)"
+
+runs:
+  using: "composite"
+  steps:
+  - name: Create result file
+    shell: bash
+    run: echo ${{ inputs.result }} >> data.txt
+  - name: Save result file
+    uses: actions/upload-artifact@v4
+    with:
+      name: ${{ github.workflow }}_${{ github.sha }}
+      path: data.txt
+      if-no-files-found: error
+      retention-days: 1
