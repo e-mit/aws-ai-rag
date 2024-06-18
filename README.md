@@ -2,14 +2,15 @@
 
 Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date news.
 
-**Incomplete**
+**Currently incomplete**
 
 ## Architecture summary
 
 ### Main technologies/products used:
 - Amazon OpenSearch Service (free tier on t2.small.search with 10GB EBS storage)
-- AWS Bedrock generative AI and vector embedding models (Titan)
-- AWS Lambda, SQS, API Gateway, S3, EventBridge, CloudFormation
+- AWS Bedrock generative AI (Anthropic Claude 3 Sonnet) and vector embedding (Titan)
+- AWS Lambda, SQS, API Gateway, S3, EventBridge, CloudFormation, DynamoDB
+- FastAPI, Mangum
 
 
 ### Data ingestion pipeline
