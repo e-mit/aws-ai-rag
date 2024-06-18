@@ -19,7 +19,7 @@ class LLM_Query(LLM_RequestQuery):
 
 class LLM_Response(BaseModel):
     """Represents the LLM response."""
-    response: str
+    answer: str
     article_refs: list[Any]
 
 
