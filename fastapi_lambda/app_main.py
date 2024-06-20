@@ -6,7 +6,8 @@ import uuid
 import os
 
 import boto3
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from fastapi import status, Path
 from fastapi import HTTPException
@@ -14,6 +15,7 @@ from pydantic import BaseModel
 
 from .models import LlmQuery, LlmRequestQuery, QueryStatus
 from . import database
+from . import auth
 
 logger = logging.getLogger()
 
@@ -21,7 +23,7 @@ LLM_LAMBDA_ARN = os.environ['LLM_LAMBDA_ARN']
 TITLE = "RAG for LLM"
 MAX_ID_LENGTH = 39  # This is a 128-bit number
 
-lambda_client = boto3.client('lambda')
+lambda_client = boto3.client('lambda')  # type: ignore
 
 
 class APIVersion(BaseModel):
@@ -59,7 +61,8 @@ async def version() -> APIVersion:
 
 
 @app.post("/query", status_code=status.HTTP_201_CREATED)
-def post_query(query: LlmRequestQuery) -> dict[str, str]:
+def post_query(query: LlmRequestQuery,
+               _username: auth.authenticated_username) -> dict[str, str]:
     """Start a new query."""
     _id = str(uuid.uuid4().int)
     database.add_new(_id)
@@ -75,7 +78,7 @@ def post_query(query: LlmRequestQuery) -> dict[str, str]:
 
 
 @app.get("/query/{query_id}", status_code=status.HTTP_200_OK)
-def get_response(query_id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
+def get_response(query_id: Annotated[str, Path(max_length=MAX_ID_LENGTH)],
                  ) -> QueryStatus:
     """Get the query response using its id."""
     try:
@@ -84,3 +87,16 @@ def get_response(query_id: Annotated[str, Path(max_length=MAX_ID_LENGTH)]
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Query ID does not exist") from e
     return QueryStatus(id=query_id, response=data)
+
+
+@app.post("/token")
+async def login_for_access_token(
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+        ) -> auth.Token:
+    return auth.create_token(form_data.username, form_data.password)
+
+
+@app.get("/who/")
+async def who(username: auth.authenticated_username):
+    """Return the username of the authenticated user."""
+    return {"username": username}
