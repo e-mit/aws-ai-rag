@@ -6,3 +6,4 @@ omit =
     package/*
     create_oss_index.py
     */__init__.py
+    fastapi_dev_test.py
