@@ -4,18 +4,31 @@ import sys
 from unittest.mock import Mock
 from typing import Any
 
+import pytest
 from fastapi.testclient import TestClient
 from mangum import Mangum
 
+from . import test_auth
+
 sys.path.append("fastapi_lambda")
 
-from fastapi_lambda import database, app_main, models, lambda_function  # noqa
+from fastapi_lambda import database, app_main, models, lambda_function, auth  # noqa
 
 client = TestClient(app_main.app)
 
 app_main.lambda_client = Mock()
 attrs: dict[str, Any] = {'invoke.return_value': []}
 app_main.lambda_client.configure_mock(**attrs)
+
+
+@pytest.fixture
+def token():
+    auth.USERS._dict[
+        'admin'].hashed_password = test_auth.make_password_hash(
+            "admin_password")
+    user = auth.USERS.get("admin")
+    assert user is not None
+    return auth.create_access_token(user)
 
 
 def test_get_version():
@@ -25,10 +38,24 @@ def test_get_version():
         "api_version": app_main.APIVersion().api_version}
 
 
-def test_post_query_get_empty_response():
-    app_main.lambda_client.invoke.reset_mock()
+def test_post_query_without_auth():
     body = models.LlmRequestQuery(query="What is the latest news?")
     response = client.post("/query", json=body.model_dump())
+    assert response.status_code == 401
+
+
+def test_post_query_fake_auth():
+    body = models.LlmRequestQuery(query="What is the latest news?")
+    response = client.post("/query", json=body.model_dump(),
+                           headers={"Authorization": "Bearer faketoken"})
+    assert response.status_code == 401
+
+
+def test_post_query_get_empty_response(token):
+    app_main.lambda_client.invoke.reset_mock()
+    body = models.LlmRequestQuery(query="What is the latest news?")
+    response = client.post("/query", json=body.model_dump(),
+                           headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 201
     assert 'id' in response.json()
     id = response.json()['id']
@@ -42,10 +69,11 @@ def test_post_query_get_empty_response():
     assert data['response'] is None
 
 
-def test_post_query_get_response():
+def test_post_query_get_response(token):
     app_main.lambda_client.invoke.reset_mock()
     body = models.LlmRequestQuery(query="What is the latest news?")
-    response = client.post("/query", json=body.model_dump())
+    response = client.post("/query", json=body.model_dump(),
+                           headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 201
     assert 'id' in response.json()
     id = response.json()['id']
@@ -71,3 +99,12 @@ def test_get_bad_id():
 
 def test_module_load():
     assert isinstance(lambda_function.lambda_handler, Mangum)
+
+
+def test_token(token):
+    response = client.post("/token", data={'username': 'admin',
+                                           'password': 'admin_password'})
+    assert response.status_code == 200
+    received_token = auth.Token(**response.json())
+    assert auth.get_current_user(received_token.access_token) == "admin"
+    assert received_token.token_type == "bearer"

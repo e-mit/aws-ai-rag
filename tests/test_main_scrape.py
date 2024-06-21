@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-import main_page_list
+from . import main_page_list
 
 sys.path.append("main_scrape_lambda")
 

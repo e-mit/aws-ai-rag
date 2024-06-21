@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-import news_page_info
+from . import news_page_info
 
 sys.path.append("news_scrape_lambda")
 
