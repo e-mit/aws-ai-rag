@@ -24,6 +24,7 @@ ADMIN_TOKEN_EXPIRE_MINS = 30
 @dataclass
 class UserData:
     """Basic user data."""
+
     username: str
     hashed_password: str
     token_expire_mins: int
@@ -31,6 +32,7 @@ class UserData:
 
 class UserDataDict:
     """Collection of user data."""
+
     def __init__(self) -> None:
         self._dict: dict[str, UserData] = {}
 
@@ -52,13 +54,14 @@ USERS.add(UserData(username="user", hashed_password=AUTH_USER_PASSWORD_HASH,
                    token_expire_mins=AUTH_TOKEN_EXPIRE_MINS))
 USERS.add(UserData(username="admin", hashed_password=AUTH_ADMIN_PASSWORD_HASH,
                             token_expire_mins=ADMIN_TOKEN_EXPIRE_MINS))
-Oauth2_dependency = Annotated[str,
-                              Depends(OAuth2PasswordBearer(tokenUrl="token"))]
+Oauth2Dependency = Annotated[str,
+                             Depends(OAuth2PasswordBearer(tokenUrl="token"))]
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class Token(BaseModel):
     """Contains the bearer token and type."""
+
     access_token: str
     token_type: str
 
@@ -90,10 +93,10 @@ def create_token(username: str, password: str) -> Token:
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(user)
-    return Token(access_token=access_token, token_type="bearer")
+    return Token(access_token=access_token, token_type="bearer")  # nosec
 
 
-def get_current_user(token: Oauth2_dependency) -> str:
+def get_current_user(token: Oauth2Dependency) -> str:
     """Validate the token, then return the username."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -105,8 +108,8 @@ def get_current_user(token: Oauth2_dependency) -> str:
         username: str | None = payload.get("sub")
         if username is None:
             raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+    except JWTError as e:
+        raise credentials_exception from e
     user = USERS.get(username)
     if user is None:
         raise credentials_exception
@@ -114,4 +117,4 @@ def get_current_user(token: Oauth2_dependency) -> str:
 
 
 # Create a dependency type
-authenticated_username = Annotated[str, Depends(get_current_user)]
+AuthenticatedUsername = Annotated[str, Depends(get_current_user)]

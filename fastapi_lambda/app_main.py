@@ -62,7 +62,7 @@ async def version() -> APIVersion:
 
 @app.post("/query", status_code=status.HTTP_201_CREATED)
 def post_query(query: LlmRequestQuery,
-               _username: auth.authenticated_username) -> dict[str, str]:
+               _username: auth.AuthenticatedUsername) -> dict[str, str]:
     """Start a new query."""
     _id = str(uuid.uuid4().int)
     database.add_new(_id)
@@ -93,10 +93,11 @@ def get_response(query_id: Annotated[str, Path(max_length=MAX_ID_LENGTH)],
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
         ) -> auth.Token:
+    """Authenticate the user and provide a bearer token."""
     return auth.create_token(form_data.username, form_data.password)
 
 
 @app.get("/who/")
-async def who(username: auth.authenticated_username):
+async def who(username: auth.AuthenticatedUsername):
     """Return the username of the authenticated user."""
     return {"username": username}
