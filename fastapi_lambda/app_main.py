@@ -41,8 +41,8 @@ app = FastAPI(
         "url": "https://e-mit.github.io/"
     },
     license_info={
-        "name": "AGPL-3.0 license",
-        "url": "https://www.gnu.org/licenses/agpl-3.0.html#license-text",
+        "name": "github.com/e-mit/aws-ai-rag",
+        "url": "https://github.com/e-mit/aws-ai-rag",
     },
     redoc_url=None
 )
