@@ -1,6 +1,7 @@
-"""Create a k-NN index in the OpenSearch Service database."""
+"""Create a k-NN index in the OpenSearch database (if not already existing)."""
 
 import os
+import sys
 
 from opensearchpy import OpenSearch, RequestsHttpConnection
 import boto3
@@ -8,8 +9,8 @@ from requests_aws4auth import AWS4Auth  # type: ignore
 
 OSS_NODE_URL = os.environ['OSS_NODE_URL']
 AWS_REGION = os.environ['AWS_REGION']
+OSS_INDEX_NAME = os.environ['OSS_INDEX_NAME']  # must be lower case
 EMBEDDING_DIMENSION = 1024
-INDEX_NAME = "news"  # must be lower case
 
 ##################################################
 
@@ -30,6 +31,11 @@ client = OpenSearch(
         http_compress=True,
         connection_class=RequestsHttpConnection
         )
+
+if client.indices.exists(index=OSS_INDEX_NAME):
+    print(f"The OSS index '{OSS_INDEX_NAME}' already exists"
+          ", so will not be recreated.")
+    sys.exit(0)
 
 index_body = {
   "settings": {
@@ -61,4 +67,4 @@ if index_body['mappings']['properties']['embedding'][  # type: ignore
     index_body['settings']['index'][  # type: ignore
         'knn.algo_param.ef_search'] = 100
 
-response = client.indices.create(index=INDEX_NAME, body=index_body)
+response = client.indices.create(index=OSS_INDEX_NAME, body=index_body)
