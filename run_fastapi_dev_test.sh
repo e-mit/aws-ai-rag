@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Run the fastapi app locally.
-# This uses the testing database and mocks out the query lambda.
+# Run the fastapi app locally, for interactive manual testing.
+# This uses a containerised test dynamoDB instance, and mocks out the query lambda.
 
 export DB_TABLE_NAME=testTable
 export TEST=true
@@ -15,7 +15,7 @@ sleep 5
 
 echo ""
 echo "Log in with temporary password: $TEMP_PWORD"
-echo "Stop and delete the test database container with:"
+echo "Stop and delete the test dynamoDB container with:"
 echo "docker stop -t 0 dynamodb_test_local"
 echo ""
 

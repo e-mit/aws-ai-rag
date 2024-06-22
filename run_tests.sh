@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run tests, coverage and linters. Uses a local containerised dynamoDB instance.
 
 export DB_TABLE_NAME=testTable
 export TEST=true

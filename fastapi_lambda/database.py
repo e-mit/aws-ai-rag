@@ -1,4 +1,4 @@
-"""Database interface for storing query results."""
+"""Database interface for storing query results in dynamoDB."""
 
 import logging
 import os

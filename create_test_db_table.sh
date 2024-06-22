@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Make a table in the local dynamodb test system
+# Make a table in the local containerised dynamodb test instance
 
 aws dynamodb create-table \
     --table-name $DB_TABLE_NAME \
