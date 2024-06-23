@@ -8,6 +8,7 @@ export TEST=true
 export QUERY_LAMBDA_ARN=test
 export OPENSEARCH_URL='https://search-osstest5-oss-domain-jepwdv34ir766dffssua7prvh4.eu-west-3.es.amazonaws.com'
 export OSS_INDEX_NAME=news
+export AWS_REGION=eu-west-3
 
 source auth_dev.sh
 
