@@ -16,6 +16,8 @@ from .search_models import SearchHit, Source
 logger = logging.getLogger()
 AWS_REGION = os.environ['AWS_REGION']
 OPENSEARCH_URL = os.environ['OPENSEARCH_URL']
+if OPENSEARCH_URL[0:4] != 'http':
+    OPENSEARCH_URL = 'https://' + OPENSEARCH_URL
 OSS_INDEX_NAME = os.getenv('OSS_INDEX_NAME', 'news')
 
 embedding_client = boto3.client("bedrock-runtime", region_name=AWS_REGION)
