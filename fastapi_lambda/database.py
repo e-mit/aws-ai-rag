@@ -47,11 +47,10 @@ def add_new(_id: str) -> None:
 
 
 def update(_id: str, data: LlmResponse) -> None:
-    """Store the data in the database, replacing previous record."""
+    """Store in the database, replacing previous record or making new."""
     dynamo_table.put_item(Item={'id': _id,
                                 'expiryTimestamp': get_expiry_timestamp(),
-                                'reply': data.model_dump_json()},
-                          ConditionExpression='attribute_exists(id)')
+                                'reply': data.model_dump_json()})
 
 
 def get(_id: str) -> LlmResponse | None:
