@@ -72,3 +72,11 @@ if index_body['mappings']['properties']['embedding'][  # type: ignore
         'knn.algo_param.ef_search'] = 100
 
 response = client.indices.create(index=OSS_INDEX_NAME, body=index_body)
+
+if not (response['acknowledged'] and response['shards_acknowledged']
+        and response['index'] == OSS_INDEX_NAME):
+    print(f"Error: got response = {response}")
+else:
+    print(f"Created OSS index {OSS_INDEX_NAME}")
+
+# client.indices.delete(index=OSS_INDEX_NAME)
