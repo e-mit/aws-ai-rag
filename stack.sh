@@ -6,12 +6,12 @@
 # ./stack.sh <stack name> <command> <3rd argument>
 
 # Where "command" is one of the following:
-entryFuncs=("delete" "create" "update_function" "update_layer" "loglevel")
+entryFuncs=("delete" "create" "update_functions" "update_layer" "loglevel")
 
 # "delete": Delete the existing stack and all of its resources.
 # "create": Create the stack. An error occurs if a stack already
 #           exists with the provided name, and no update occurs.
-# "update_function": Update just the lambda definitions.
+# "update_functions": Update just the lambda definitions.
 # "update_layer": Update just the python dependency package layer.
 # "loglevel": Change the lambda logging levels.
 
@@ -26,6 +26,10 @@ entryFuncs=("delete" "create" "update_function" "update_layer" "loglevel")
 
 STACK_NAME=$1
 ARG3=$3
+MAIN_LAMBDA="main_scrape_lambda"
+NEWS_LAMBDA="news_scrape_lambda"
+FASTAPI_LAMBDA="fastapi_lambda"
+QUERY_LAMBDA="query_lambda"
 
 if [[ -z $STACK_NAME ]]; then
     echo ERROR: Please set STACK_NAME
@@ -39,13 +43,12 @@ fi
 export AWS_PAGER=""
 
 _make_names() {
-    MAIN_FUNCTION_NAME="${STACK_NAME}-lambda-main-scrape"
-    NEWS_FUNCTION_NAME="${STACK_NAME}-lambda-news-scrape"
     # Note: bucket name must be lower case only, and globally unique
     RAND_ID=$(dd if=/dev/random bs=3 count=6 2>/dev/null \
               | od -An -tx1 | tr -d ' \t\n')
     BUCKET_NAME="${STACK_NAME_LOWER}-bucket-${RAND_ID}"
     LAYER_NAME="${STACK_NAME}-layer"
+    LAMBDAS=($MAIN_LAMBDA $NEWS_LAMBDA $FASTAPI_LAMBDA $QUERY_LAMBDA)
 }
 
 _delete_files() {
@@ -84,12 +87,8 @@ except:
 }
 
 _prepare_packages() {
-    rm -rf package venv
-    /usr/bin/python3 -m venv venv
-    source venv/bin/activate
-    pip3 install --target package/python -r requirements.txt &> /dev/null
-    pip3 install -r requirements.txt &> /dev/null
-    pip3 install -r requirements-test.txt &> /dev/null
+    rm -rf layer
+    pip3 install --target layer/python -r requirements.txt &> /dev/null
 }
 
 create() {
@@ -100,24 +99,31 @@ create() {
     aws s3 mb s3://$BUCKET_NAME
     echo Made temporary S3 bucket $BUCKET_NAME
 
-    aws cloudformation package \
-    --template-file template.yml \
-    --s3-bucket $BUCKET_NAME \
-    --output-template-file out.yml &> /dev/null
+    for LAMBDA_NAME in "${LAMBDAS[@]}"
+    do
+        rm -rf $LAMBDA_NAME/__pycache__
+        zip -r function.zip $LAMBDA_NAME &> /dev/null
+        aws s3 cp function.zip s3://${BUCKET_NAME}/$LAMBDA_NAME
+    done
+
+    cd layer
+    zip -r ../layer.zip . &> /dev/null
+    cd ..
+    aws s3 cp layer.zip s3://${BUCKET_NAME}/layer
 
     aws cloudformation deploy \
-    --template-file out.yml \
+    --template-file template.yml \
     --stack-name $STACK_NAME \
     --capabilities CAPABILITY_NAMED_IAM \
-    --parameter-overrides stackName=$STACK_NAME $ARG3
+    --parameter-overrides bucketName=$BUCKET_NAME $ARG3
 
     if [[ "$?" -ne 0 ]]; then
         aws cloudformation describe-stack-events \
         --stack-name $STACK_NAME
     fi
 
-    aws s3 rb --force s3://$BUCKET_NAME
-    echo Deleted the temporary S3 bucket
+    #aws s3 rb --force s3://$BUCKET_NAME
+    #echo Deleted the temporary S3 bucket
 }
 
 loglevel() {
@@ -130,92 +136,70 @@ loglevel() {
     fi
 
     export ARG3
-    ENV_VARS=$(aws lambda get-function-configuration \
-    --function-name $MAIN_FUNCTION_NAME | \
-    python3 -c \
-    "import sys, json, os
+
+    for LAMBDA_NAME in "${LAMBDAS[@]}"
+    do
+        ENV_VARS=$(aws lambda get-function-configuration \
+        --function-name $STACK_NAME-$LAMBDA_NAME | \
+        python3 -c \
+        "import sys, json, os
 environment = json.load(sys.stdin)['Environment']
 environment['Variables']['LOG_LEVEL'] = os.environ['ARG3']
 print(json.dumps(environment))")
 
-    aws lambda update-function-configuration \
-    --function-name $MAIN_FUNCTION_NAME \
-    --environment "$ENV_VARS" &> /dev/null
+        aws lambda update-function-configuration \
+        --function-name $STACK_NAME-$LAMBDA_NAME \
+        --environment "$ENV_VARS" &> /dev/null
 
-    if [[ "$?" -eq 0 ]]; then
-        echo "Log level set to $ARG3 for $MAIN_FUNCTION_NAME"
-    fi
-
-    ENV_VARS=$(aws lambda get-function-configuration \
-    --function-name $NEWS_FUNCTION_NAME | \
-    python3 -c \
-    "import sys, json, os
-environment = json.load(sys.stdin)['Environment']
-environment['Variables']['LOG_LEVEL'] = os.environ['ARG3']
-print(json.dumps(environment))")
-
-    aws lambda update-function-configuration \
-    --function-name $NEWS_FUNCTION_NAME \
-    --environment "$ENV_VARS" &> /dev/null
-
-    if [[ "$?" -eq 0 ]]; then
-        echo "Log level set to $ARG3 for $NEWS_FUNCTION_NAME"
-    fi
+        if [[ "$?" -eq 0 ]]; then
+            echo "Log level set to $ARG3 for $STACK_NAME-$LAMBDA_NAME"
+        fi
+    done
 }
 
-update_function() {
-    # Update both lambda functions
+update_functions() {
+    # Update all lambda functions in the stack
     _make_names
     _delete_files
-
-    zip -r function.zip main_scrape_lambda
-    aws lambda update-function-code \
-    --function-name $MAIN_FUNCTION_NAME \
-    --zip-file fileb://function.zip &> /dev/null
-    if [[ "$?" -eq 0 ]]; then
-        echo Updated Lambda $MAIN_FUNCTION_NAME
-    fi
-
-    rm -f *.zip
-    zip -r function.zip news_scrape_lambda
-    aws lambda update-function-code \
-    --function-name $NEWS_FUNCTION_NAME \
-    --zip-file fileb://function.zip &> /dev/null
-    if [[ "$?" -eq 0 ]]; then
-        echo Updated Lambda $NEWS_FUNCTION_NAME
-    fi
+    for LAMBDA_NAME in "${LAMBDAS[@]}"
+    do
+        rm -f *.zip
+        rm -rf $LAMBDA_NAME/__pycache__
+        zip -r function.zip $LAMBDA_NAME
+        aws lambda update-function-code \
+        --function-name $STACK_NAME-$LAMBDA_NAME \
+        --zip-file fileb://function.zip &> /dev/null
+        if [[ "$?" -eq 0 ]]; then
+            echo Updated Lambda $STACK_NAME-$LAMBDA_NAME
+        fi
+    done
 }
 
 update_layer() {
-    # Apply same layer to both lambdas
+    # Apply same layer to all lambdas
     _make_names
     _prepare_packages
     rm -f *.zip
-    cd package
-    zip -r ../package.zip . &> /dev/null
+    cd layer
+    zip -r ../layer.zip . &> /dev/null
     cd ..
     LAYER_ARN=$(aws lambda publish-layer-version \
     --layer-name $LAYER_NAME \
     --description "Python package layer" \
-    --zip-file fileb://package.zip \
+    --zip-file fileb://layer.zip \
     --compatible-runtimes python3.10 \
     --compatible-architectures "x86_64" | jq -r '.LayerVersionArn')
 
-    aws lambda update-function-configuration \
-    --function-name $MAIN_FUNCTION_NAME \
-    --layers $LAYER_ARN &> /dev/null
+    for LAMBDA_NAME in "${LAMBDAS[@]}"
+    do
+        aws lambda update-function-configuration \
+        --function-name $STACK_NAME-$LAMBDA_NAME \
+        --layers $LAYER_ARN &> /dev/null
 
-    if [[ "$?" -eq 0 ]]; then
-        echo "Created and assigned layer $LAYER_ARN for $MAIN_FUNCTION_NAME"
-    fi
-
-    aws lambda update-function-configuration \
-    --function-name $NEWS_FUNCTION_NAME \
-    --layers $LAYER_ARN &> /dev/null
-
-    if [[ "$?" -eq 0 ]]; then
-        echo "Created and assigned layer $LAYER_ARN for $NEWS_FUNCTION_NAME"
-    fi
+        if [[ "$?" -eq 0 ]]; then
+            echo "Created and assigned layer $LAYER_ARN for $STACK_NAME-$LAMBDA_NAME"
+        fi
+    done
 }
 
 ################################################

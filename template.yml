@@ -2,11 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: AWS AI RAG project
 Parameters:
-  stackName:
-    Description: The stack or project name
-    Type: String
-    MinLength: 1
-    MaxLength: 50
   timePeriodValue:
     Description: "The time period of the scheduled scrape event (without unit)"
     Type: Number
@@ -28,6 +23,11 @@ Parameters:
     MinLength: 1
     MaxLength: 50
     Default: INFO
+  bucketName:
+    Description: The S3 bucket which will contain the uploaded resources
+    Type: String
+    MinLength: 1
+    MaxLength: 100
 
 Resources:
 
@@ -37,7 +37,7 @@ Resources:
       DomainName:
         !Join
         - '-'
-        - - !Ref stackName
+        - - !Ref "AWS::StackName"
           - 'oss-domain'
       EngineVersion: OpenSearch_2.13
       EBSOptions:
@@ -55,7 +55,7 @@ Resources:
             Principal:
               AWS: !Ref "AWS::AccountId"
             Action: 'es:*'
-            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${stackName}-oss-domain/*'
+            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${AWS::StackName}-oss-domain/*'
 
   mainScrapeLog:
     Type: AWS::Logs::LogGroup
@@ -65,8 +65,8 @@ Resources:
       LogGroupName:
         !Join
         - '-'
-        - - !Ref stackName
-          - 'lambda-main-scrape-log'
+        - - !Ref "AWS::StackName"
+          - 'main_scrape_lambda-log'
 
   accessPolicyToSQS:
     Type: AWS::IAM::ManagedPolicy
@@ -89,15 +89,17 @@ Resources:
       FunctionName:
         !Join
         - '-'
-        - - !Ref stackName
-          - 'lambda-main-scrape'
+        - - !Ref "AWS::StackName"
+          - 'main_scrape_lambda'
       Architectures:
         - x86_64
       MemorySize: 128
       PackageType: Zip
       Handler: main_scrape_lambda.lambda_function.lambda_handler
       Runtime: python3.10
-      CodeUri: .
+      CodeUri:
+        Bucket: !Ref bucketName
+        Key: main_scrape_lambda
       Description: Do a periodic scrape of the main page
       Timeout: !Ref timeout
       Policies:
@@ -105,7 +107,7 @@ Resources:
         - AWSLambda_ReadOnlyAccess
         - !Ref accessPolicyToSQS
       Layers:
-        - Ref: libScrape
+        - Ref: pythonLibLayer
       Events:
         ScheduledEvent:
           Type: ScheduleV2
@@ -126,22 +128,24 @@ Resources:
             Name:
               !Join
               - '-'
-              - - !Ref stackName
+              - - !Ref "AWS::StackName"
                 - 'schedule'
       LoggingConfig:
         LogFormat: Text
         LogGroup: !Ref mainScrapeLog
 
-  libScrape:
+  pythonLibLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
       LayerName:
         !Join
         - '-'
-        - - !Ref stackName
+        - - !Ref "AWS::StackName"
           - 'layer'
       Description: Python packages used by the lambdas.
-      ContentUri: package
+      ContentUri:
+        Bucket: !Ref bucketName
+        Key: layer
       CompatibleArchitectures:
         - x86_64
       CompatibleRuntimes:
@@ -155,8 +159,8 @@ Resources:
       LogGroupName:
         !Join
         - '-'
-        - - !Ref stackName
-          - 'lambda-news-scrape-log'
+        - - !Ref "AWS::StackName"
+          - 'news_scrape_lambda-log'
 
   queue:
     Type: AWS::SQS::Queue
@@ -165,7 +169,7 @@ Resources:
       QueueName:
         !Join
         - '-'
-        - - !Ref stackName
+        - - !Ref "AWS::StackName"
           - 'queue'
       RedriveAllowPolicy:
         redrivePermission: denyAll
@@ -186,7 +190,7 @@ Resources:
       QueueName:
         !Join
         - '-'
-        - - !Ref stackName
+        - - !Ref "AWS::StackName"
           - 'dlq'
 
   newsScrape:
@@ -199,15 +203,17 @@ Resources:
       FunctionName:
         !Join
         - '-'
-        - - !Ref stackName
-          - 'lambda-news-scrape'
+        - - !Ref "AWS::StackName"
+          - 'news_scrape_lambda'
       Architectures:
         - x86_64
       MemorySize: 128
       PackageType: Zip
       Handler: news_scrape_lambda.lambda_function.lambda_handler
       Runtime: python3.10
-      CodeUri: .
+      CodeUri:
+        Bucket: !Ref bucketName
+        Key: news_scrape_lambda
       Description: Read events from SQS and process
       Timeout: !Ref timeout
       Policies:
@@ -217,7 +223,7 @@ Resources:
         - AmazonBedrockFullAccess
         - AWSLambdaSQSQueueExecutionRole
       Layers:
-        - Ref: libScrape
+        - Ref: pythonLibLayer
       Events:
         SQSEvent:
           Type: SQS
@@ -230,3 +236,140 @@ Resources:
       LoggingConfig:
         LogFormat: Text
         LogGroup: !Ref newsScrapeLog
+
+  fastapiLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Environment:
+        Variables:
+          QUERY_LAMBDA_ARN: !GetAtt queryLambda.Arn
+          LOG_LEVEL: !Ref logLevel
+          DB_TABLE_NAME: !Ref dynamoDB
+      FunctionName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'fastapi_lambda'
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      PackageType: Zip
+      Handler: fastapi_lambda.lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri:
+        Bucket: !Ref bucketName
+        Key: fastapi_lambda
+      Description: Provide an API
+      Timeout: !Ref timeout
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AmazonOpenSearchServiceFullAccess
+        - AmazonBedrockFullAccess
+        - !Ref dynamoDbAccess
+      Layers:
+        - Ref: pythonLibLayer
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: !Ref fastapiLambdaLog
+
+  fastapiLambdaLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      RetentionInDays: 3
+      LogGroupName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'fastapi_lambda-log'
+
+  queryLambdaLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      RetentionInDays: 3
+      LogGroupName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'query_lambda-log'
+
+  queryLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Environment:
+        Variables:
+          OPENSEARCH_URL: !GetAtt ossDomain.DomainEndpoint
+          LOG_LEVEL: !Ref logLevel
+          DB_TABLE_NAME: !Ref dynamoDB
+      FunctionName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'query_lambda'
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      PackageType: Zip
+      Handler: query_lambda.lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri:
+        Bucket: !Ref bucketName
+        Key: query_lambda
+      Description: Query the LLM
+      Timeout: !Ref timeout
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AmazonOpenSearchServiceFullAccess
+        - AmazonBedrockFullAccess
+        - !Ref dynamoDbAccess
+      Layers:
+        - Ref: pythonLibLayer
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: !Ref queryLambdaLog
+
+  dynamoDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "3"
+        WriteCapacityUnits: "3"
+      TableName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'dynamodb'
+      TimeToLiveSpecification:
+        AttributeName: expiryTimestamp
+        Enabled: true
+
+  dynamoDbAccess:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Give lambdas CRUD access to dynamoDB
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:DeleteItem"
+              - "dynamodb:GetItem"
+              - "dynamodb:PutItem"
+              - "dynamodb:Query"
+              - "dynamodb:Scan"
+              - "dynamodb:UpdateItem"
+              - "dynamodb:BatchWriteItem"
+            Resource:
+              - !GetAtt dynamoDB.Arn
+              - !Sub ${dynamoDB.Arn}/index/*
