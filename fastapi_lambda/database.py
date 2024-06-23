@@ -9,6 +9,7 @@ import boto3
 from pydantic import BaseModel
 
 DB_TABLE_NAME = os.environ['DB_TABLE_NAME']
+AWS_REGION = os.environ['AWS_REGION']
 TTL_MINUTES = 30
 logger = logging.getLogger()
 
@@ -23,11 +24,13 @@ class LlmResponse(BaseModel):
 if os.environ.get('TEST'):
     logger.info('Local test mode: using database %s', DB_TABLE_NAME)
     dynamo_table = boto3.resource('dynamodb',
-                                  endpoint_url='http://localhost:8000'
+                                  endpoint_url='http://localhost:8000',
+                                  region_name=AWS_REGION
                                   ).Table(DB_TABLE_NAME)
 else:
     logger.info('Using database %s', DB_TABLE_NAME)
-    dynamo_table = boto3.resource('dynamodb').Table(DB_TABLE_NAME)
+    dynamo_table = boto3.resource('dynamodb',
+                                  region_name=AWS_REGION).Table(DB_TABLE_NAME)
 
 
 def get_expiry_timestamp() -> int:
