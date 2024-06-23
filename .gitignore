@@ -2,7 +2,7 @@
 venv
 .vscode
 __pycache__
-package
+layer
 out.yml
 *.zip
 .coverage

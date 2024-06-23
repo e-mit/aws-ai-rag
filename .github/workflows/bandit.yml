@@ -16,7 +16,7 @@ jobs:
         run: |
           pip install bandit
       - name: bandit
-        run: python -m bandit -r . --exclude=/tests/,/venv/,/old_examples/,/package/
+        run: python -m bandit -r . --exclude=/tests/,/venv/,/old_examples/,/layer/
       - name: Save result
         if: always()
         uses: ./.github/actions/save-workflow-result

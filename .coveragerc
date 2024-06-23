@@ -3,7 +3,7 @@ omit =
     tests/*
     venv/*
     old_examples/*
-    package/*
+    layer/*
     create_oss_index.py
     */__init__.py
     fastapi_dev_test.py

@@ -11,7 +11,7 @@ jobs:
       - name: Prepare test environment
         uses: ./.github/actions/prepare-test-environment
       - name: mypy
-        run: python -m mypy . --explicit-package-bases --exclude 'tests/' --exclude 'venv/' --exclude 'package/' --exclude 'old_examples/'
+        run: python -m mypy . --explicit-package-bases --exclude 'tests/' --exclude 'venv/' --exclude 'layer/' --exclude 'old_examples/'
       - name: Save result
         if: always()
         uses: ./.github/actions/save-workflow-result
