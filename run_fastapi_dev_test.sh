@@ -5,7 +5,9 @@
 
 export DB_TABLE_NAME=testTable
 export TEST=true
-export LLM_LAMBDA_ARN=test
+export QUERY_LAMBDA_ARN=test
+export OPENSEARCH_URL='https://search-osstest5-oss-domain-jepwdv34ir766dffssua7prvh4.eu-west-3.es.amazonaws.com'
+export OSS_INDEX_NAME=news
 
 source auth_dev.sh
 

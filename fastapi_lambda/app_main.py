@@ -19,7 +19,7 @@ from . import auth
 
 logger = logging.getLogger()
 
-LLM_LAMBDA_ARN = os.environ['LLM_LAMBDA_ARN']
+QUERY_LAMBDA_ARN = os.environ['QUERY_LAMBDA_ARN']
 TITLE = "RAG for LLM"
 MAX_ID_LENGTH = 39  # This is a 128-bit number
 
@@ -67,7 +67,7 @@ def post_query(query: LlmRequestQuery,
     _id = str(uuid.uuid4().int)
     database.add_new(_id)
     response = lambda_client.invoke(
-        FunctionName=LLM_LAMBDA_ARN,
+        FunctionName=QUERY_LAMBDA_ARN,
         InvocationType='Event',
         Payload=LlmQuery(**query.model_dump(), id=_id).model_dump_json()
     )

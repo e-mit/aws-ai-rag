@@ -3,7 +3,7 @@
 
 export DB_TABLE_NAME=testTable
 export TEST=true
-export LLM_LAMBDA_ARN=test
+export QUERY_LAMBDA_ARN=test
 
 # Prevent terminal output waiting:
 export AWS_PAGER=""

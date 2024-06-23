@@ -19,7 +19,7 @@ jobs:
       run: |
         export DB_TABLE_NAME=testTable
         export TEST=true
-        export LLM_LAMBDA_ARN=test
+        export QUERY_LAMBDA_ARN=test
         docker run --rm --name dynamodb_test_local -d -p 8000:8000 amazon/dynamodb-local
         sleep 5
         ./create_test_db_table.sh
@@ -27,7 +27,7 @@ jobs:
       run: |
         export DB_TABLE_NAME=testTable
         export TEST=true
-        export LLM_LAMBDA_ARN=test
+        export QUERY_LAMBDA_ARN=test
         target_coverage_pc=80
         coverage_pc=$(python -m pytest --cov=. tests -p no:cacheprovider | awk '$1 == "TOTAL" {print $NF+0}')
         echo Test coverage = $coverage_pc%
