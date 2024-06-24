@@ -7,4 +7,4 @@ pydantic==2.7.3
 mangum==0.17.0
 fastapi==0.111.0
 python-jose==3.3.0
-bcrypt==3.2.2
+bcrypt==3.2.2  # Cannot use v4 on lambda (with Python3.10) due to glibc version

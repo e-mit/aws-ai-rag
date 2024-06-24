@@ -175,6 +175,8 @@ update_functions() {
         --zip-file fileb://function.zip &> /dev/null
         if [[ "$?" -eq 0 ]]; then
             echo Updated Lambda $STACK_NAME-$LAMBDA_NAME
+        else
+            echo "ERROR: failed to update $STACK_NAME-$LAMBDA_NAME"
         fi
     done
 }
@@ -202,6 +204,8 @@ update_layer() {
 
         if [[ "$?" -eq 0 ]]; then
             echo "Created and assigned layer $LAYER_ARN for $STACK_NAME-$LAMBDA_NAME"
+        else
+            echo "ERROR: failed to set layer for $STACK_NAME-$LAMBDA_NAME"
         fi
     done
 }
