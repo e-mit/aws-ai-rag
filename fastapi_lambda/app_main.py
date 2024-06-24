@@ -23,6 +23,7 @@ QUERY_LAMBDA_ARN = os.environ['QUERY_LAMBDA_ARN']
 API_STAGE_NAME = os.environ['API_STAGE_NAME']
 TITLE = "RAG for LLM"
 MAX_ID_LENGTH = 39  # This is a 128-bit number
+PATH_PREFIX = 'api'
 
 lambda_client = boto3.client('lambda')  # type: ignore
 
@@ -47,8 +48,8 @@ app = FastAPI(
     },
     redoc_url=None,
     root_path=f"/{API_STAGE_NAME}",
-    openapi_url="/api/openapi.json",
-    docs_url="/api/docs"
+    openapi_url=f"/{PATH_PREFIX}/openapi.json",
+    docs_url=f"/{PATH_PREFIX}/docs"
 )
 
 router = APIRouter()
@@ -57,7 +58,7 @@ router = APIRouter()
 @router.get("/", include_in_schema=False)
 async def root() -> RedirectResponse:
     """Redirect to the Swagger UI."""
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url=f"/{API_STAGE_NAME}/{PATH_PREFIX}/docs")
 
 
 @router.get("/version")
@@ -109,4 +110,4 @@ async def identify_user(username: auth.AuthenticatedUsername):
     return {"username": username}
 
 
-app.include_router(router, prefix="/api", tags=["API"])
+app.include_router(router, prefix=f"/{PATH_PREFIX}", tags=["API"])
