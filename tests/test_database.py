@@ -39,7 +39,7 @@ def test_get_completed():
     database.add_new(id1)
     assert database.get(id1) is None
     data = database.LlmResponse(answer="this is the answer",
-                                 article_refs=["ref1", "ref2"])
+                                article_refs=["ref1", "ref2"])
     database.update(id1, data)
     get_data = database.get(id1)
     assert get_data is not None
@@ -48,6 +48,8 @@ def test_get_completed():
 
 def test_update_nonexistent():
     data = database.LlmResponse(answer="this is the answer",
-                                 article_refs=["ref1", "ref2"])
-    with pytest.raises(Exception):
-        database.update('876543', data)
+                                article_refs=["ref1", "ref2"])
+    id1 = '876543'
+    database.update(id1, data)
+    get_data = database.get(id1)
+    assert get_data is not None

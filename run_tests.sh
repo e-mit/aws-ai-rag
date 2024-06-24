@@ -4,6 +4,8 @@
 export DB_TABLE_NAME=testTable
 export TEST=true
 export QUERY_LAMBDA_ARN=test
+export AWS_REGION=eu-west-3
+export API_STAGE_NAME=v1
 
 # Prevent terminal output waiting:
 export AWS_PAGER=""

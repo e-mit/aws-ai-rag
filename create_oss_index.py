@@ -21,20 +21,16 @@ if credentials is None:
 awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    SERVICE, session_token=credentials.token)
 
-try:
-    client = OpenSearch(
-            hosts=[OSS_NODE_URL],
-            http_auth=awsauth,
-            use_ssl=True,
-            verify_certs=True,
-            ssl_assert_hostname=False,
-            ssl_show_warn=False,
-            http_compress=True,
-            connection_class=RequestsHttpConnection
-            )
-except Exception:
-    print("Could not connect to the OpenSearch service.")
-    sys.exit(1)
+client = OpenSearch(
+        hosts=[OSS_NODE_URL],
+        http_auth=awsauth,
+        use_ssl=True,
+        verify_certs=True,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False,
+        http_compress=True,
+        connection_class=RequestsHttpConnection
+        )
 
 if client.indices.exists(index=OSS_INDEX_NAME):
     print(f"The OSS index '{OSS_INDEX_NAME}' already exists"

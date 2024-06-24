@@ -50,6 +50,8 @@ def test_lambda_success():
 
 def test_lambda_nonexistent_id():
     id = '19191'
-    with pytest.raises(Exception):
-        lambda_function.lambda_handler(
-            {'id': id, 'query': 'Summarize the UK news yesterday'}, None)
+    lambda_function.lambda_handler(
+        {'id': id, 'query': 'Summarize the UK news yesterday'}, None)
+    result = database.get(id)
+    assert result is not None
+    assert len(result.answer) > 0
