@@ -4,6 +4,7 @@
 
 export AWS_REGION=eu-west-3
 export STACK_NAME=osstest6
+export API_STAGE_NAME=v1
 
 # Time period for the main page scrape lambda repetition:
 export CYCLE_PERIOD_VALUE=4
@@ -54,6 +55,7 @@ environment = json.load(sys.stdin)['Environment']
 environment['Variables']['AUTH_SECRET_KEY'] = '$(openssl rand -hex 32)'
 environment['Variables']['AUTH_USER_PASSWORD_HASH'] = '$AUTH_USER_PASSWORD_HASH'
 environment['Variables']['AUTH_ADMIN_PASSWORD_HASH'] = '$AUTH_ADMIN_PASSWORD_HASH'
+environment['Variables']['API_STAGE_NAME'] = '$API_STAGE_NAME'
 print(json.dumps(environment))")
 aws lambda update-function-configuration \
     --function-name ${STACK_NAME}-fastapi_lambda \
