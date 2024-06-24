@@ -31,7 +31,7 @@ logLevel=$LOG_LEVEL"
 
 
 # Create the OpenSearch service index
-export OSS_NODE_URL='https://'$(aws opensearch describe-domain \
+export OPENSEARCH_URL='https://'$(aws opensearch describe-domain \
 --domain-name $STACK_NAME-oss-domain | \
 python3 -c \
 "import sys, json
@@ -42,7 +42,7 @@ except:
 if [[ "$?" -ne 0 ]]; then
     echo "Error: could not obtain the OpenSearch endpoint URL"
 else
-    echo "The OpenSearch endpoint URL is $OSS_NODE_URL"
+    echo "The OpenSearch endpoint URL is $OPENSEARCH_URL"
     python create_oss_index.py
 fi
 

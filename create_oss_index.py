@@ -7,7 +7,7 @@ from opensearchpy import OpenSearch, RequestsHttpConnection
 import boto3
 from requests_aws4auth import AWS4Auth  # type: ignore
 
-OSS_NODE_URL = os.environ['OSS_NODE_URL']
+OPENSEARCH_URL = os.environ['OPENSEARCH_URL']
 AWS_REGION = os.environ['AWS_REGION']
 OSS_INDEX_NAME = os.environ['OSS_INDEX_NAME']  # must be lower case
 EMBEDDING_DIMENSION = 1024
@@ -22,7 +22,7 @@ awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    SERVICE, session_token=credentials.token)
 
 client = OpenSearch(
-        hosts=[OSS_NODE_URL],
+        hosts=[OPENSEARCH_URL],
         http_auth=awsauth,
         use_ssl=True,
         verify_certs=True,

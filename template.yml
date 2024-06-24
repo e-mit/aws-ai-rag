@@ -198,7 +198,7 @@ Resources:
     Properties:
       Environment:
         Variables:
-          OSS_CLUSTER_URL: !GetAtt ossDomain.DomainEndpoint
+          OPENSEARCH_URL: !GetAtt ossDomain.DomainEndpoint
           LOG_LEVEL: !Ref logLevel
       FunctionName:
         !Join

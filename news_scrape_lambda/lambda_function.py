@@ -20,9 +20,9 @@ logger = logging.getLogger()
 logger.setLevel(os.getenv('LOG_LEVEL', 'DEBUG'))
 
 GET_TIMEOUT_SEC = float(os.getenv('GET_TIMEOUT_SEC', '5'))
-OSS_CLUSTER_URL = os.getenv('OSS_CLUSTER_URL', "https://example.com")
-if OSS_CLUSTER_URL[0:4] != 'http':
-    OSS_CLUSTER_URL = 'https://' + OSS_CLUSTER_URL
+OPENSEARCH_URL = os.getenv('OPENSEARCH_URL', "https://example.com")
+if OPENSEARCH_URL[0:4] != 'http':
+    OPENSEARCH_URL = 'https://' + OPENSEARCH_URL
 AWS_REGION = os.getenv('AWS_REGION', "eu-west-3")
 MAXIMUM_DELETE_BATCH_SIZE = 100
 DOCUMENT_EXPIRY_TIME_DAYS = int(os.getenv('DOCUMENT_EXPIRY_TIME_DAYS', '8'))
@@ -39,7 +39,7 @@ awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, AWS_REGION,
                    SERVICE, session_token=credentials.token)
 
 oss_client = OpenSearch(
-        hosts=[OSS_CLUSTER_URL],
+        hosts=[OPENSEARCH_URL],
         http_auth=awsauth,
         use_ssl=True,
         verify_certs=True,
