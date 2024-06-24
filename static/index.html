@@ -21,6 +21,18 @@
     </ul>
     <p>All hosted on AWS (and mostly within the free tier).</p>
 
+    <details>
+        <summary>About Retrieval-Augmented Generation (RAG)</summary>
+        <ul>
+            <li>RAG combines information retrieval with text generation by Large Language Models (LLMs, a form of generative AI).</li>
+            <li>This allows the LLM to use new/external knowledge in its answers, without the need for costly retraining.</li>
+            <li>It also facilitates referencing/tracing of source data, and provides documents for further reading.</li>
+            <li>Potentially relevant information is obtained from the database via a "semantic search" using the input query.</li>
+            <li>The search is usually implemented as a vector similarity search in a database of vector embeddings.</li>
+            <li>Retrieved documents are passed to the LLM, along with the query and additional prompts, and a response is obtained.</li>
+        </ul>
+    </details>
+
     <h4>Log in to use the service</h4>
     <div>
         <label for="username">Username:</label>
