@@ -129,7 +129,6 @@ function displayReferenceLinks(article_refs) {
         link.textContent = item.title;
         link.target = '_blank';
         refDiv.appendChild(link);
-        refDiv.appendChild(document.createElement('br'));
     });
 }
 
