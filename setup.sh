@@ -3,7 +3,7 @@
 # Run this script to deploy the project on AWS
 
 export AWS_REGION=eu-west-3
-export STACK_NAME=osstest5
+export STACK_NAME=osstest6
 
 # Time period for the main page scrape lambda repetition:
 export CYCLE_PERIOD_VALUE=4
@@ -69,6 +69,24 @@ print(json.dumps(environment))")
 aws lambda update-function-configuration \
     --function-name ${STACK_NAME}-query_lambda \
     --environment "$ENV_VARS" &> /dev/null
+
+# Now enable the web scraping lambda's schedule, preserving the other parameters
+NEW_SCHEDULE_FILE=new_sched_temp.json
+aws scheduler get-schedule \
+    --name $STACK_NAME-schedule | python3 -c \
+"import sys, json
+try:
+    sched = json.load(sys.stdin)
+    new_sched = {'State': 'ENABLED'}
+    for k in ['FlexibleTimeWindow','ScheduleExpression','Target','Name']:
+        new_sched[k] = sched[k]
+    print(json.dumps(new_sched))
+except Exception:
+    pass
+" > $NEW_SCHEDULE_FILE
+aws scheduler update-schedule \
+    --cli-input-json file://$NEW_SCHEDULE_FILE &> /dev/null
+rm -f $NEW_SCHEDULE_FILE
 
 # Get the API lambda ARN:
 AWS_AC_ID=$(aws sts get-caller-identity --query Account --output text)

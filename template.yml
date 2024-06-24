@@ -113,7 +113,7 @@ Resources:
           Type: ScheduleV2
           Description: Repeating trigger for the Lambda
           Properties:
-            State: ENABLED
+            State: DISABLED
             RetryPolicy:
               MaximumRetryAttempts: 2
               MaximumEventAgeInSeconds: 240
