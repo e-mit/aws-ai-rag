@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" href="/v1/static/style.css">
+    <script src="/v1/static/scripts.js"></script>
+    <title>LLM RAG Demo</title>
+  </head>
+
+  <body>
+    <h1>LLM RAG Demo</h1>
+    <p>A project comprising:</p>
+    <ul>
+        <li>Lambda functions to obtain and store news articles in an OpenSearch database</li>
+        <li>A FastAPI app to provide user authentication and an API for LLM querying</li>
+        <li>A lambda function to find relevant news articles and form a RAG query</li>
+        <li>Use of the Bedrock LLM service for generative AI and vector embedding</li>
+        <li>An API gateway and S3 bucket to proxy the API and serve a static website</li>
+    </ul>
+    <p>All hosted on AWS (and mostly within the free tier).</p>
+    <h5><a href="/v1/api/docs">FastAPI documentation UI</a></h5>
+    <h5><a href="https://github.com/e-mit/aws-ai-rag">View the code on GitHub</a></h5>
+
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter your username">
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter your password">
+    </div>
+    <br>
+    <button onclick="authenticate()">Authenticate</button>
+    <div id="authMessage"></div>
+    
+    <h4>Ask a question about the news</h4>
+    <textarea id="textInput" rows="10" cols="30" placeholder="Enter your text here..."></textarea>
+    <br>
+    <button onclick="sendPostRequest()">Send</button>
+
+    <footer>
+        <a href="https://github.com/e-mit/aws-ai-rag">View the source code on GitHub</a>
+        <p>&copy; 2024</p>
+    </footer>
+  </body>
+</html>
