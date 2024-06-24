@@ -93,3 +93,11 @@ textarea {
     line-height: 1.2em;
     height: 4.7em;
 }
+
+#spinner {
+    display: none;
+}
+
+#result {
+    white-space: pre-wrap;
+}
