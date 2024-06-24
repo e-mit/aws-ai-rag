@@ -55,3 +55,29 @@ details {
     margin-top: 1rem;
     margin-bottom: 0;
 }
+
+#loginBox {
+    display: grid;
+    grid-template-columns: min(17rem, 100%) 1fr;
+}
+
+#loginBox > * {
+    grid-column: 1 / 2;
+    display: flex;
+    justify-content: center;
+}
+
+#spinBox {
+    align-items: center;
+}
+
+#spinBox > button {
+    width: min(20rem, 100%);
+    display: block;
+    margin: auto;
+}
+
+summary {
+    overflow-wrap: break-word;
+    word-break: normal;
+}

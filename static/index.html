@@ -24,9 +24,9 @@
     <details>
         <summary>About Retrieval-Augmented Generation (RAG)</summary>
         <ul>
-            <li>RAG combines information retrieval with text generation by Large Language Models (LLMs, a form of generative AI).</li>
-            <li>This allows the LLM to use new/external knowledge in its answers, without the need for costly retraining.</li>
-            <li>It also facilitates referencing/tracing of source data, and provides documents for further reading.</li>
+            <li>RAG combines information retrieval and text generation by Large Language Models (LLMs, a form of generative AI).</li>
+            <li>This allows the LLM to use new or external knowledge in its answers, without the need for costly retraining.</li>
+            <li>It also facilitates the referencing or tracing of source data, and identifies documents for further reading.</li>
             <li>Potentially relevant information is obtained from the database via a "semantic search" using the input query.</li>
             <li>The search is usually implemented as a vector similarity search in a database of vector embeddings.</li>
             <li>Retrieved documents are passed to the LLM, along with the query and additional prompts, and a response is obtained.</li>
@@ -34,27 +34,25 @@
     </details>
 
     <h4>Log in to use the service</h4>
-    <div>
-        <label for="username">Username:</label>
+    <div id="loginBox">
         <input type="text" id="username" placeholder="Enter your username">
-    </div>
-    <div>
-        <label for="password">Password:</label>
         <input type="password" id="password" placeholder="Enter your password">
+        <br>
+        <button id="login" onclick="login()">Log in</button>
+        <button id="logout" onclick="logout()">Log out</button>
+        <div id="authMessage"></div>
     </div>
-    <br>
-    <button id="login" onclick="login()">Log in</button>
-    <button id="logout" onclick="logout()">Log out</button>
-    <div id="authMessage"></div>
-    
+
     <h4>Ask a question about the news</h4>
     <textarea id="textInput" rows="10" cols="30" placeholder="Enter your query...">What happened yesterday?</textarea>
     <br>
-    <button id="sendButton" onclick="sendPostRequest()">Send</button>
-
-    <div id="spinner">
-        <p>Spinner...</p>
+    <div id="spinBox">
+        <button id="sendButton" onclick="sendPostRequest()">Send</button>
+        <div id="spinner">
+            <p>Spinner...</p>
+        </div>
     </div>
+
     <h4 id="responseTitle">Response</h4>
     <div id="response"></div>
     <h5 id="referencesTitle">The LLM had access to the following articles</h5>
