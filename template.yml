@@ -265,8 +265,8 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - AWSLambda_ReadOnlyAccess
         - AmazonOpenSearchServiceFullAccess
-        - AmazonBedrockFullAccess
         - !Ref dynamoDbAccess
+        - !Ref invokeQueryLambdaPolicy
       Layers:
         - Ref: pythonLibLayer
       LoggingConfig:
@@ -373,3 +373,16 @@ Resources:
             Resource:
               - !GetAtt dynamoDB.Arn
               - !Sub ${dynamoDB.Arn}/index/*
+
+  invokeQueryLambdaPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Give access to query_lambda
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "lambda:InvokeFunction"
+            Resource:
+              - !GetAtt queryLambda.Arn
