@@ -8,10 +8,19 @@ function displayAuthMessage(message, isSuccess) {
     authMessageDiv.style.color = isSuccess ? 'green' : 'red';
 }
 
-function authenticate() {
+function setAuthEnabled(enabled) {
+    document.getElementById('username').disabled = !enabled;
+    document.getElementById('password').disabled = !enabled;
+    document.getElementById('login').disabled = !enabled;
+    document.getElementById('logout').disabled = !enabled;
+}
+
+function login() {
+    setAuthEnabled(false);
+    displayAuthMessage('Authenticating, please wait...', true);
+
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
     const formData = new URLSearchParams();
     formData.append('username', username);
     formData.append('password', password);
@@ -34,8 +43,11 @@ function authenticate() {
         displayAuthMessage('Success', true);
     })
     .catch((error) => {
-        console.error('Error:', error);
-        displayAuthMessage('FAILURE', false);
+        token = null
+        displayAuthMessage('Error: please check and retry', false);
+    })
+    .finally(() => {
+        setAuthEnabled(true);
     });
 }
 
@@ -45,11 +57,17 @@ function logout() {
 }
 
 function sendPostRequest() {
-    const text = document.getElementById('textInput').value;
+    displayResponse("", false, null);
 
     if (!token) {
-        displayAuthMessage('Please log in first.', false);
+        displayAuthMessage('Please log in', false);
         return;
+    }
+
+    const text = document.getElementById('textInput').value;
+    if (!text) {
+        displayResponse("Please enter a query", false, null);
+        return
     }
 
     setInputEnabled(false);
@@ -65,12 +83,12 @@ function sendPostRequest() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Success:', data);
         returnedId = data.id;
+        displayResponse("Query acknowledged, please wait...", false, null);
         pollStatus();
     })
     .catch((error) => {
-        console.error('Error:', error);
+        displayResponse("Error: please retry.", false, null);
         setInputEnabled(true);
         showSpinner(false);
     });
@@ -86,17 +104,38 @@ function setInputEnabled(enabled) {
     document.getElementById('sendButton').disabled = !enabled;
 }
 
-function displayResult(data) {
-    //data.response = {answer, article_refs[]}
-    const resultDiv = document.getElementById('result');
-    resultDiv.textContent = data.response.answer;
+function displayResponse(text, bFromLLM, article_refs) {
+    const resultDiv = document.getElementById('response');
+    resultDiv.textContent = text;
+    const responseTitle = document.getElementById('responseTitle');
+    responseTitle.style.display = bFromLLM ? 'block' : 'none';
+    displayReferenceLinks(article_refs);
+}
+
+function displayReferenceLinks(article_refs) {
+    const refDiv = document.getElementById('references');
+    refDiv.innerHTML = '';
+    const referencesTitle = document.getElementById('referencesTitle');
+    referencesTitle.style.display = 'none';
+
+    if (!article_refs) {
+        return;
+    }
+
+    referencesTitle.style.display = 'block';
+    article_refs.forEach(item => {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.textContent = item.title;
+        link.target = '_blank';
+        refDiv.appendChild(link);
+        refDiv.appendChild(document.createElement('br'));
+    });
 }
 
 function pollStatus() {
-    const url = `/v1/api/query/${returnedId}`;
-
     pollingInterval = setInterval(() => {
-        fetch(url, {
+        fetch(`/v1/api/query/${returnedId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -111,14 +150,15 @@ function pollStatus() {
                 }
                 showSpinner(false);
                 setInputEnabled(true);
-                displayResult(data);
+                displayResponse(data.response.answer, true, data.response.article_refs);
             }
         })
         .catch((error) => {
             console.error('Error:', error);
             clearInterval(pollingInterval);
             showSpinner(false);
+            displayResponse("Error: please retry.", null);
             setInputEnabled(true);
         });
-    }, 1000);
+    }, 1500);
 }

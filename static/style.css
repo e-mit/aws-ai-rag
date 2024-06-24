@@ -98,6 +98,14 @@ textarea {
     display: none;
 }
 
-#result {
+#responseTitle {
+    display: none;
+}
+
+#referencesTitle {
+    display: none;
+}
+
+#response {
     white-space: pre-wrap;
 }

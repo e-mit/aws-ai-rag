@@ -20,9 +20,8 @@
         <li>An API gateway and S3 bucket to proxy the API and serve a static website</li>
     </ul>
     <p>All hosted on AWS (and mostly within the free tier).</p>
-    <h5><a href="/v1/api/docs">FastAPI documentation UI</a></h5>
-    <h5><a href="https://github.com/e-mit/aws-ai-rag">View the code on GitHub</a></h5>
 
+    <h4>Log in to use the service</h4>
     <div>
         <label for="username">Username:</label>
         <input type="text" id="username" placeholder="Enter your username">
@@ -32,22 +31,28 @@
         <input type="password" id="password" placeholder="Enter your password">
     </div>
     <br>
-    <button onclick="authenticate()">Log in</button>
-    <button onclick="logout()">Log out</button>
+    <button id="login" onclick="login()">Log in</button>
+    <button id="logout" onclick="logout()">Log out</button>
     <div id="authMessage"></div>
     
     <h4>Ask a question about the news</h4>
-    <textarea id="textInput" rows="10" cols="30" placeholder="Enter your text here..."></textarea>
+    <textarea id="textInput" rows="10" cols="30" placeholder="Enter your query...">What happened yesterday?</textarea>
     <br>
     <button id="sendButton" onclick="sendPostRequest()">Send</button>
 
     <div id="spinner">
-        <p>Loading...</p>
+        <p>Spinner...</p>
     </div>
-    <div id="result"></div>
+    <h4 id="responseTitle">Response</h4>
+    <div id="response"></div>
+    <h5 id="referencesTitle">The LLM had access to the following articles</h5>
+    <div id="references"></div>
 
     <footer>
+        <a href="/v1/api/docs">FastAPI documentation UI</a>
+        <br><br>
         <a href="https://github.com/e-mit/aws-ai-rag">View the source code on GitHub</a>
+        <br><br>
     </footer>
   </body>
 </html>
