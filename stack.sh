@@ -122,8 +122,12 @@ create() {
         --stack-name $STACK_NAME
     fi
 
-    #aws s3 rb --force s3://$BUCKET_NAME
-    #echo Deleted the temporary S3 bucket
+    echo "Waiting for stack creation to complete..."
+    aws cloudformation wait stack-create-complete \
+        --stack-name $STACK_NAME --no-paginate
+
+    aws s3 rb --force s3://$BUCKET_NAME
+    echo Deleted the temporary S3 bucket
 }
 
 loglevel() {
