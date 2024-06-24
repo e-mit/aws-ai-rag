@@ -10,7 +10,7 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 
 AUTH_SECRET_KEY = os.environ['AUTH_SECRET_KEY']
@@ -56,7 +56,6 @@ USERS.add(UserData(username="admin", hashed_password=AUTH_ADMIN_PASSWORD_HASH,
                             token_expire_mins=ADMIN_TOKEN_EXPIRE_MINS))
 Oauth2Dependency = Annotated[str,
                              Depends(OAuth2PasswordBearer(tokenUrl="token"))]
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class Token(BaseModel):
@@ -70,7 +69,8 @@ def authenticate_user(username: str, password: str) -> UserData | None:
     """Check that the user exists and the password is correct."""
     user = USERS.get(username)
     if (user is not None and
-            password_context.verify(password, user.hashed_password)):
+            bcrypt.checkpw(password.encode('utf-8'),
+                           user.hashed_password.encode('utf-8'))):
         return user
     return None
 

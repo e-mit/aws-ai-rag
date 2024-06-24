@@ -2,7 +2,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import HTTPException
 from jose import jwt
 
@@ -12,7 +12,8 @@ from fastapi_lambda import auth  # noqa
 
 
 def make_password_hash(password: str) -> str:
-    return CryptContext(schemes=['bcrypt'], deprecated='auto').hash(password)
+    return bcrypt.hashpw(
+        password.encode('utf-8'), bcrypt.gensalt()).decode("utf-8")
 
 
 def test_UserDataDict():

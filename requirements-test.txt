@@ -18,4 +18,3 @@ python-dateutil
 types-python-dateutil
 requests
 types-python-jose
-types-passlib
