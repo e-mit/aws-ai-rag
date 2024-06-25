@@ -72,11 +72,11 @@ details {
     justify-content: center;
 }
 
-#spinBox {
+#sendButtonBox {
     align-items: center;
 }
 
-#spinBox > button {
+#sendButtonBox > button {
     width: min(20rem, 100%);
     display: block;
     margin: auto;

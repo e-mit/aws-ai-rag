@@ -60,37 +60,40 @@
         </ul>
     </details>
 
-    <div class="columnBox" id="captchaBox">
-        <h4>Solve the puzzle to use the service</h4>
-        <div id="captcha-container"></div>
-        <a href="#" onclick="toggleLoginMethod(event)">Log in instead</a>
+    <div id="authenticationBox">
+        <div class="columnBox" id="captchaBox">
+            <h4>Solve the puzzle to use the service</h4>
+            <div id="captcha-container"></div>
+            <a href="#" onclick="toggleLoginMethod(event)">Log in instead</a>
+        </div>
+
+        <div class="columnBox" id="loginBox">
+            <h4>Log in to use the service</h4>
+            <input type="text" id="username" placeholder="Enter your username">
+            <input type="password" id="password" placeholder="Enter your password">
+            <br>
+            <button id="login" onclick="login()">Log in</button>
+            <button id="logout" onclick="logout()">Log out</button>
+            <a href="#" onclick="toggleLoginMethod(event)">Solve a CAPTCHA instead</a>
+        </div>
+
+        <div class="columnBox">
+            <div id="authMessage"></div>
+        </div>
     </div>
 
-    <div class="columnBox" id="loginBox">
-        <h4>Log in to use the service</h4>
-        <input type="text" id="username" placeholder="Enter your username">
-        <input type="password" id="password" placeholder="Enter your password">
+    <div id="answerBox">
+        <h4>Ask a question about the news</h4>
+        <textarea id="textInput" placeholder="Enter your query...">What has happened today?</textarea>
         <br>
-        <button id="login" onclick="login()">Log in</button>
-        <button id="logout" onclick="logout()">Log out</button>
-        <a href="#" onclick="toggleLoginMethod(event)">Solve a CAPTCHA instead</a>
+        <div id="sendButtonBox">
+            <button id="sendButton" onclick="sendPostRequest()">Send</button>
+        </div>
+        <h4 id="responseTitle">Response</h4>
+        <div id="response"></div>
+        <h5 id="referencesTitle">The LLM had access to the following articles</h5>
+        <div id="references"></div>
     </div>
-
-    <div class="columnBox">
-        <div id="authMessage"></div>
-    </div>
-
-    <h4>Ask a question about the news</h4>
-    <textarea id="textInput" rows="10" cols="30" placeholder="Enter your query...">What happened yesterday?</textarea>
-    <br>
-    <div id="spinBox">
-        <button id="sendButton" onclick="sendPostRequest()">Send</button>
-    </div>
-
-    <h4 id="responseTitle">Response</h4>
-    <div id="response"></div>
-    <h5 id="referencesTitle">The LLM had access to the following articles</h5>
-    <div id="references"></div>
 
     <footer>
         <a href="https://github.com/e-mit/aws-ai-rag">View the source code on GitHub</a>
