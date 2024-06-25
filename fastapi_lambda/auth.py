@@ -19,6 +19,7 @@ AUTH_TOKEN_EXPIRE_MINS = int(os.environ.get('AUTH_TOKEN_EXPIRE_MINS', '3'))
 AUTH_USER_PASSWORD_HASH = os.environ['AUTH_USER_PASSWORD_HASH']
 AUTH_ADMIN_PASSWORD_HASH = os.environ['AUTH_ADMIN_PASSWORD_HASH']
 ADMIN_TOKEN_EXPIRE_MINS = 30
+CAPTCHA_USERNAME = "captcha"
 
 
 @dataclass
@@ -53,11 +54,11 @@ USERS = UserDataDict()
 USERS.add(UserData(username="user", hashed_password=AUTH_USER_PASSWORD_HASH,
                    token_expire_mins=AUTH_TOKEN_EXPIRE_MINS))
 USERS.add(UserData(username="admin", hashed_password=AUTH_ADMIN_PASSWORD_HASH,
-                            token_expire_mins=ADMIN_TOKEN_EXPIRE_MINS))
+                   token_expire_mins=ADMIN_TOKEN_EXPIRE_MINS))
+USERS.add(UserData(username=CAPTCHA_USERNAME, hashed_password="",
+                   token_expire_mins=AUTH_TOKEN_EXPIRE_MINS))
 Oauth2Dependency = Annotated[str,
                              Depends(OAuth2PasswordBearer(tokenUrl="token"))]
-CAPTCHA_USER = UserData(username="captcha", hashed_password="",
-                        token_expire_mins=AUTH_TOKEN_EXPIRE_MINS)
 
 
 class Token(BaseModel):
@@ -100,8 +101,15 @@ def create_token(username: str, password: str) -> Token:
 
 def create_captcha_token() -> Token:
     """Create a JWT in response to a valid captcha."""
-    return Token(access_token=create_access_token(CAPTCHA_USER),
-                 token_type="bearer")  # nosec
+    user = USERS.get(CAPTCHA_USERNAME)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return Token(access_token=create_access_token(user),   # nosec
+                 token_type="bearer")
 
 
 def get_current_user(token: Oauth2Dependency) -> str:
