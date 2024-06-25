@@ -37,6 +37,11 @@ textarea {
 
 #response {
     white-space: pre-wrap;
+    margin-top: 1rem;
+}
+
+#authMessage {
+    margin-top: 1rem;
 }
 
 #references > a, footer > a {
@@ -52,12 +57,16 @@ details {
     margin-bottom: 0;
 }
 
-#loginBox {
-    display: none;
+.columnBox {
+    display: grid;
     grid-template-columns: min(24rem, 100%) 1fr;
 }
 
-#loginBox > * {
+#loginBox {
+    display: none;
+}
+
+.columnBox > * {
     grid-column: 1 / 2;
     display: flex;
     justify-content: center;
@@ -78,21 +87,10 @@ summary {
     word-break: normal;
 }
 
-#captchaBox {
-    display: grid;
-    grid-template-columns: min(24rem, 100%) 1fr;
-}
-
-#captchaBox > * {
-    grid-column: 1 / 2;
-    display: flex;
-    justify-content: center;
-}
-
 #captchaBox > h4 {
     margin-bottom: 0;
 }
 
-#captchaBox > a, #loginBox > a {
+.columnBox > a {
     margin-top: 1rem;
 }

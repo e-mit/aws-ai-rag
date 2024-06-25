@@ -60,13 +60,13 @@
         </ul>
     </details>
 
-    <div id="captchaBox">
+    <div class="columnBox" id="captchaBox">
         <h4>Solve the puzzle to use the service</h4>
         <div id="captcha-container"></div>
         <a href="#" onclick="toggleLoginMethod(event)">Log in instead</a>
     </div>
 
-    <div id="loginBox">
+    <div class="columnBox" id="loginBox">
         <h4>Log in to use the service</h4>
         <input type="text" id="username" placeholder="Enter your username">
         <input type="password" id="password" placeholder="Enter your password">
@@ -76,7 +76,9 @@
         <a href="#" onclick="toggleLoginMethod(event)">Solve a CAPTCHA instead</a>
     </div>
 
-    <div id="authMessage"></div>
+    <div class="columnBox">
+        <div id="authMessage"></div>
+    </div>
 
     <h4>Ask a question about the news</h4>
     <textarea id="textInput" rows="10" cols="30" placeholder="Enter your query...">What happened yesterday?</textarea>
