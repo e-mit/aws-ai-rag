@@ -1,6 +1,22 @@
 
 let returnedId = null;
 let token = null;
+let rootPath = '/';
+
+function extractVN() {
+    const pathname = window.location.pathname;
+    const regex = /^\/v(\d+)(\/|$)/;
+    const match = pathname.match(regex);
+    if (match) {
+        return ('/v' + match[1]);
+    }
+    return '/';
+}
+
+window.onload = function() {
+    rootPath = extractVN();
+    console.log(rootPath);
+};
 
 function displayAuthMessage(message, isSuccess) {
     const authMessageDiv = document.getElementById('authMessage');
@@ -25,7 +41,7 @@ function login() {
     formData.append('username', username);
     formData.append('password', password);
 
-    fetch('/v1/api/token', {
+    fetch(`${rootPath}/api/token`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -73,7 +89,7 @@ function sendPostRequest() {
     setInputEnabled(false);
     showSpinner(true);
 
-    fetch('/v1/api/query', {
+    fetch(`${rootPath}/api/query`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -134,7 +150,7 @@ function displayReferenceLinks(article_refs) {
 
 function pollStatus() {
     pollingInterval = setInterval(() => {
-        fetch(`/v1/api/query/${returnedId}`, {
+        fetch(`${rootPath}/api/query/${returnedId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

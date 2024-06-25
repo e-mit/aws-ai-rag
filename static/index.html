@@ -4,8 +4,34 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
-    <link rel="stylesheet" href="/v1/static/style.css">
-    <script src="/v1/static/scripts.js"></script>
+    <script>
+        (function loadStatic() {
+            const pathname = window.location.pathname;
+            const regex = /^\/v\d+(\/|$)/;
+            let stylesheetPath = '/static/style.css';
+            let scriptPath = '/static/scripts.js';
+
+            if (regex.test(pathname)) {
+                let match = pathname.match(regex)[0];
+                if (match.endsWith('/')) {
+                    match = match.slice(0, -1);
+                }
+                stylesheetPath = match + stylesheetPath;
+                scriptPath = match + scriptPath;
+            }
+
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = stylesheetPath;
+            document.head.appendChild(link);
+
+            const script = document.createElement('script');
+            script.src = scriptPath;
+            script.type = 'text/javascript';
+            script.async = true;
+            document.head.appendChild(script);
+        })();
+    </script>
     <title>LLM RAG Demo</title>
   </head>
 
@@ -59,7 +85,6 @@
     <div id="references"></div>
 
     <footer>
-        <a href="/v1/api/docs">FastAPI documentation UI</a>
         <a href="https://github.com/e-mit/aws-ai-rag">View the source code on GitHub</a>
         <br><br>
     </footer>
