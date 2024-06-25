@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <script type="text/javascript" src="https://ae19887525f8.eu-west-3.captcha-sdk.awswaf.com/ae19887525f8/jsapi.js" defer></script>
     <script>
         (function loadStatic() {
             const pathname = window.location.pathname;
@@ -59,15 +60,23 @@
         </ul>
     </details>
 
-    <h4>Log in to use the service</h4>
+    <div id="captchaBox">
+        <h4>Solve the puzzle to use the service</h4>
+        <div id="captcha-container"></div>
+        <a href="#" onclick="toggleLoginMethod(event)">Log in instead</a>
+    </div>
+
     <div id="loginBox">
+        <h4>Log in to use the service</h4>
         <input type="text" id="username" placeholder="Enter your username">
         <input type="password" id="password" placeholder="Enter your password">
         <br>
         <button id="login" onclick="login()">Log in</button>
         <button id="logout" onclick="logout()">Log out</button>
-        <div id="authMessage"></div>
+        <a href="#" onclick="toggleLoginMethod(event)">Solve a CAPTCHA instead</a>
     </div>
+
+    <div id="authMessage"></div>
 
     <h4>Ask a question about the news</h4>
     <textarea id="textInput" rows="10" cols="30" placeholder="Enter your query...">What happened yesterday?</textarea>

@@ -13,10 +13,9 @@ function extractVN() {
     return '/';
 }
 
-window.onload = function() {
+window.addEventListener('load', function() {
     rootPath = extractVN();
-    console.log(rootPath);
-};
+});
 
 function displayAuthMessage(message, isSuccess) {
     const authMessageDiv = document.getElementById('authMessage');
@@ -76,7 +75,7 @@ function sendPostRequest() {
     displayResponse("", false, null);
 
     if (!token) {
-        displayAuthMessage('Please log in', false);
+        displayAuthMessage('Please authenticate', false);
         return;
     }
 
@@ -169,11 +168,63 @@ function pollStatus() {
             }
         })
         .catch((error) => {
-            console.error('Error:', error);
             clearInterval(pollingInterval);
             showSpinner(false);
             displayResponse("Error: please retry.", null);
             setInputEnabled(true);
         });
     }, 1500);
+}
+
+function setError(error) {
+    displayAuthMessage(error.message, false);
+}
+
+function generateCaptcha() {
+    const container = document.getElementById('captcha-container');
+    AwsWafCaptcha.renderCaptcha(container, {
+        apiKey: "B4025inDbNz9TWAjMtzvvlRNhEXWKAaBXsr92hKugYKJ/Efd/hqdEFbgaWsNOAgQR+kBDj5N6yQYANjvWHsLr5Y/y75o4ZyfNhex/25NkXjDV55jmRCq/OV/XCAdZnbdrjN/yE7R6D65Abbkha3kCsCWpvRf4yVXjWWeF883XB3gZHho3h/9fhW2/MTM6E4z1y3cHsYSVWSzP8syM6byh9wctMXNTcjApUV6Qx0xqMi0o3g52lBaEs0384ENsCbHD4vie0ONwBlqcjgzwY3GVOdh/lpDVudOdlIEGC4GOan5BbgkjKYGuL7elMQvzqz17pbvFjfos/FFiFi65pbGO7+xZ5LK5OQqIgu5HGDIWyUON3SN11rc5YQsubeTmnswgIwX8BT+U5gn2xUCu+72K9IcXojvmabrBPOH1Muj73DaKoit85rXHoIFyaAYQCzVS4FAHq4GiYhwg129+4Rp5kfB1eOctoH6sO17MWQrZ8sxLsS/66KhzgPByHQ4qf5X9vbaqVWD5x97l9P+WxPkJOE2ZtNZcc42a4aLnVKsIkhQ4ZC/4gEUa0988CZ8WRh+LnBRfPmxiZgU+PgxqnG0ge7GP5IMdViyBUF8tUYaDZD3ADtP7oH/mIuRvCRtBC78f228py8DGaYEceN7A+Up5XmU4e7rERIIoo4uLy+JiS8=_0_1",
+        onSuccess: () => {
+            captchaLogin();
+        },
+        onError: setError,
+        skipTitle: true
+    });
+}
+
+window.addEventListener('load', function() {
+    generateCaptcha();
+});
+
+function toggleLoginMethod(event) {
+    event.preventDefault();
+    const loginBox = document.getElementById('loginBox');
+    const captchaBox = document.getElementById('captchaBox');
+    const showCaptcha = captchaBox.style.display === 'none';
+    loginBox.style.display = showCaptcha ? 'none' : 'grid';
+    captchaBox.style.display = showCaptcha ? 'grid' : 'none';
+}
+
+function captchaLogin() {
+    displayAuthMessage('Authenticating, please wait...', true);
+    fetch(`${rootPath}/api/captcha_token`, {
+        method: 'GET'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Authentication failed');
+        }
+        return response.json();
+    })
+    .then(data => {
+        token = data.access_token;
+        displayAuthMessage('Success', true);
+    })
+    .catch((error) => {
+        token = null
+        displayAuthMessage('Error: please check and retry', false);
+    })
+    .finally(() => {
+        generateCaptcha();
+    });
 }

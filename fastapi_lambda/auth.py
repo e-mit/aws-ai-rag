@@ -15,7 +15,7 @@ import bcrypt
 
 AUTH_SECRET_KEY = os.environ['AUTH_SECRET_KEY']
 ALGORITHM = "HS256"
-AUTH_TOKEN_EXPIRE_MINS = int(os.environ.get('AUTH_TOKEN_EXPIRE_MINS', '5'))
+AUTH_TOKEN_EXPIRE_MINS = int(os.environ.get('AUTH_TOKEN_EXPIRE_MINS', '3'))
 AUTH_USER_PASSWORD_HASH = os.environ['AUTH_USER_PASSWORD_HASH']
 AUTH_ADMIN_PASSWORD_HASH = os.environ['AUTH_ADMIN_PASSWORD_HASH']
 ADMIN_TOKEN_EXPIRE_MINS = 30
@@ -56,6 +56,8 @@ USERS.add(UserData(username="admin", hashed_password=AUTH_ADMIN_PASSWORD_HASH,
                             token_expire_mins=ADMIN_TOKEN_EXPIRE_MINS))
 Oauth2Dependency = Annotated[str,
                              Depends(OAuth2PasswordBearer(tokenUrl="token"))]
+CAPTCHA_USER = UserData(username="captcha", hashed_password="",
+                        token_expire_mins=AUTH_TOKEN_EXPIRE_MINS)
 
 
 class Token(BaseModel):
@@ -94,6 +96,12 @@ def create_token(username: str, password: str) -> Token:
         )
     access_token = create_access_token(user)
     return Token(access_token=access_token, token_type="bearer")  # nosec
+
+
+def create_captcha_token() -> Token:
+    """Create a JWT in response to a valid captcha."""
+    return Token(access_token=create_access_token(CAPTCHA_USER),
+                 token_type="bearer")  # nosec
 
 
 def get_current_user(token: Oauth2Dependency) -> str:

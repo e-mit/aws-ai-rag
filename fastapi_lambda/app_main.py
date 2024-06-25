@@ -104,6 +104,15 @@ async def login_for_access_token(
     return auth.create_token(form_data.username, form_data.password)
 
 
+@router.get("/captcha_token")
+async def get_captcha_token() -> auth.Token:
+    """Provide a bearer token for a completed captcha.
+
+    This endpoint must be covered by an API Gateway ACL/Captcha.
+    """
+    return auth.create_captcha_token()
+
+
 @router.get("/who")
 async def identify_user(username: auth.AuthenticatedUsername):
     """Return the username of the authenticated user."""
