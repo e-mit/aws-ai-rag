@@ -55,7 +55,7 @@ function login() {
     })
     .then(data => {
         token = data.access_token;
-        displayAuthMessage('Success', true);
+        showAnswerBox(true);
     })
     .catch((error) => {
         token = null
@@ -71,11 +71,11 @@ function logout() {
     displayAuthMessage("You have logged out", true);
 }
 
-function sendPostRequest() {
+function sendQueryRequest() {
     displayResponse("", false, null);
 
     if (!token) {
-        displayAuthMessage('Please authenticate', false);
+        showAnswerBox(false);
         return;
     }
 
@@ -95,7 +95,13 @@ function sendPostRequest() {
         },
         body: JSON.stringify({query: text})
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.status !== 201) {
+            showAnswerBox(false);
+            return Promise.reject();
+        }
+        return response.json();
+    })
     .then(data => {
         returnedId = data.id;
         displayResponse("Query acknowledged, please wait...", false, null);
@@ -148,7 +154,12 @@ function pollStatus() {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status !== 200) {
+                return Promise.reject(new Error(`Request failed with status ${response.status}`));
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'completed') {
                 clearInterval(pollingInterval);
@@ -161,7 +172,7 @@ function pollStatus() {
         })
         .catch((error) => {
             clearInterval(pollingInterval);
-            displayResponse("Error: please retry.", null);
+            displayResponse("Error: please retry.", false, null);
             setInputEnabled(true);
         });
     }, 1500);
@@ -209,7 +220,7 @@ function captchaLogin() {
     })
     .then(data => {
         token = data.access_token;
-        displayAuthMessage('Success', true);
+        showAnswerBox(true);
     })
     .catch((error) => {
         token = null
@@ -218,4 +229,17 @@ function captchaLogin() {
     .finally(() => {
         generateCaptcha();
     });
+}
+
+function showAnswerBox(bShowAnswer) {
+    displayResponse("", false, null);
+    if (bShowAnswer) {
+        displayAuthMessage('Success', true);
+    } else {
+        displayAuthMessage('Please authenticate', false);
+    }
+    const answerBox = document.getElementById('answerBox');
+    const authenticationBox = document.getElementById('authenticationBox');
+    answerBox.style.display = bShowAnswer ? 'block' : 'none';
+    authenticationBox.style.display = bShowAnswer ? 'none' : 'block';
 }

@@ -94,3 +94,7 @@ summary {
 .columnBox > a {
     margin-top: 1rem;
 }
+
+#answerBox {
+    display: none;
+}
