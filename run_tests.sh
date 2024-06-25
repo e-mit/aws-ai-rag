@@ -16,6 +16,9 @@ docker run --rm --name dynamodb_test_local -d -p 8000:8000 amazon/dynamodb-local
 sleep 5
 ./create_test_db_table.sh
 
+# enable printing:
+#pytest -v -s tests
+
 python -m pytest --cov=. tests -p no:cacheprovider
 
 docker stop -t 0 dynamodb_test_local

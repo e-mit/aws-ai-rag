@@ -110,3 +110,9 @@ def test_token(token):
     received_token = auth.Token(**response.json())
     assert auth.get_current_user(received_token.access_token) == "admin"
     assert received_token.token_type == "bearer"
+
+
+def test_get_root():
+    response = client.get(f"{URL_BASE_PATH}")
+    assert response.status_code == 200
+    assert app_main.TITLE in response.text
