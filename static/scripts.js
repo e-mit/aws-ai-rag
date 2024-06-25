@@ -86,7 +86,6 @@ function sendPostRequest() {
     }
 
     setInputEnabled(false);
-    showSpinner(true);
 
     fetch(`${rootPath}/api/query`, {
         method: 'POST',
@@ -105,13 +104,7 @@ function sendPostRequest() {
     .catch((error) => {
         displayResponse("Error: please retry.", false, null);
         setInputEnabled(true);
-        showSpinner(false);
     });
-}
-
-function showSpinner(show) {
-    const spinner = document.getElementById('spinner');
-    spinner.style.display = show ? 'block' : 'none';
 }
 
 function setInputEnabled(enabled) {
@@ -162,14 +155,12 @@ function pollStatus() {
                 if (data.id != returnedId) {
                     throw new Error('ID mismatch');
                 }
-                showSpinner(false);
                 setInputEnabled(true);
                 displayResponse(data.response.answer, true, data.response.article_refs);
             }
         })
         .catch((error) => {
             clearInterval(pollingInterval);
-            showSpinner(false);
             displayResponse("Error: please retry.", null);
             setInputEnabled(true);
         });
