@@ -85,6 +85,7 @@ function sendQueryRequest() {
         return
     }
 
+    showSpinner(true);
     setInputEnabled(false);
 
     fetch(`${rootPath}/api/query`, {
@@ -108,6 +109,7 @@ function sendQueryRequest() {
         pollStatus();
     })
     .catch((error) => {
+        showSpinner(false);
         displayResponse("Error: please retry.", false, null);
         setInputEnabled(true);
     });
@@ -174,6 +176,9 @@ function pollStatus() {
             clearInterval(pollingInterval);
             displayResponse("Error: please retry.", false, null);
             setInputEnabled(true);
+        })
+        .finally(() => {
+            showSpinner(false);
         });
     }, 1500);
 }
@@ -232,6 +237,7 @@ function captchaLogin() {
 }
 
 function showAnswerBox(bShowAnswer) {
+    showSpinner(false);
     displayResponse("", false, null);
     if (bShowAnswer) {
         displayAuthMessage('Success', true);
@@ -242,4 +248,9 @@ function showAnswerBox(bShowAnswer) {
     const authenticationBox = document.getElementById('authenticationBox');
     answerBox.style.display = bShowAnswer ? 'block' : 'none';
     authenticationBox.style.display = bShowAnswer ? 'none' : 'block';
+}
+
+function showSpinner(show) {
+    const spinner = document.getElementById('spinner');
+    spinner.style.display = show ? 'block' : 'none';
 }
