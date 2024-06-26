@@ -11,6 +11,7 @@
             const regex = /^\/v\d+(\/|$)/;
             let stylesheetPath = '/static/style.css';
             let scriptPath = '/static/scripts.js';
+            let faviconPath = "/static/favicon.ico";
 
             if (regex.test(pathname)) {
                 let match = pathname.match(regex)[0];
@@ -19,6 +20,7 @@
                 }
                 stylesheetPath = match + stylesheetPath;
                 scriptPath = match + scriptPath;
+                faviconPath = match + faviconPath;
             }
 
             const link = document.createElement('link');
@@ -31,6 +33,13 @@
             script.type = 'text/javascript';
             script.async = true;
             document.head.appendChild(script);
+
+            const icon = document.createElement('link');
+            icon.rel = 'icon';
+            icon.href = faviconPath;
+            icon.type = 'image/x-icon';
+            document.head.appendChild(icon);
+
         })();
     </script>
     <title>LLM RAG Demo</title>

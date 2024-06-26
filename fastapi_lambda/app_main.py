@@ -119,10 +119,4 @@ async def identify_user(username: auth.AuthenticatedUsername):
     return {"username": username}
 
 
-@app.get("/favicon.ico", include_in_schema=False)
-async def get_favicon() -> RedirectResponse:
-    """Serve favicon; only used if stage name is hidden from URL."""
-    return RedirectResponse(url=f"/{API_STAGE_NAME}/favicon.ico")
-
-
 app.include_router(router, prefix=f"/{PATH_PREFIX}", tags=["API"])
