@@ -27,7 +27,7 @@ class UserData:
     """Basic user data."""
 
     username: str
-    hashed_password: str
+    hashed_password: str | None
     token_expire_mins: int
 
 
@@ -55,7 +55,7 @@ USERS.add(UserData(username="user", hashed_password=AUTH_USER_PASSWORD_HASH,
                    token_expire_mins=AUTH_TOKEN_EXPIRE_MINS))
 USERS.add(UserData(username="admin", hashed_password=AUTH_ADMIN_PASSWORD_HASH,
                    token_expire_mins=ADMIN_TOKEN_EXPIRE_MINS))
-USERS.add(UserData(username=CAPTCHA_USERNAME, hashed_password="",
+USERS.add(UserData(username=CAPTCHA_USERNAME, hashed_password=None,
                    token_expire_mins=AUTH_TOKEN_EXPIRE_MINS))
 Oauth2Dependency = Annotated[str,
                              Depends(OAuth2PasswordBearer(tokenUrl="token"))]
@@ -71,7 +71,7 @@ class Token(BaseModel):
 def authenticate_user(username: str, password: str) -> UserData | None:
     """Check that the user exists and the password is correct."""
     user = USERS.get(username)
-    if (user is not None and
+    if (user is not None and user.hashed_password is not None and
             bcrypt.checkpw(password.encode('utf-8'),
                            user.hashed_password.encode('utf-8'))):
         return user
