@@ -14,7 +14,8 @@
 
 Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date news.
 
-**Currently incomplete**
+[Try the working demonstration.](https://mtest.dev)
+
 
 ## Architecture summary
 
@@ -46,6 +47,13 @@ Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date new
 5. Combine the full text of the most relevant search results with the question to produce a RAG query
 6. Pass the RAG query to the AWS Bedrock Titan LLM and obtain a response
 7. Present the response to the user, together with the URLs of the source news articles selected in step 4 as citations/further reading.
+
+
+### Front end
+
+[github.com/e-mit/aws-api-website](https://github.com/e-mit/aws-api-website) is used to create an API Gateway which serves the files in ```/static/``` and proxies the API.
+
+This also configures a custom domain name for the gateway URL and provides CAPTCHA support.
 
 
 ## Setup notes
