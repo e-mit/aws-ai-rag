@@ -134,10 +134,11 @@ function displayReferenceLinks(article_refs) {
     const referencesTitle = document.getElementById('referencesTitle');
     referencesTitle.style.display = 'none';
 
-    if (!article_refs) {
+    if ((!article_refs) || (article_refs.length === 0)) {
+        referencesTitle.textContent = 'The LLM did not access any news articles';
         return;
     }
-
+    referencesTitle.textContent = 'The LLM had access to the following articles';
     referencesTitle.style.display = 'block';
     article_refs.forEach(item => {
         const link = document.createElement('a');
