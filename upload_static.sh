@@ -5,11 +5,14 @@
 # This uploads files in subfolders into a single folder by putting slashes in the
 # uploaded filenames.
 
-WEB_BUCKET_NAME=webapigw-bucket-40a1092d615b28af1720762b
-
 FOLDER="static"
 
 #############################################
+
+if [[ -z $WEB_BUCKET_NAME ]]; then
+    echo ERROR: Please set WEB_BUCKET_NAME
+    return 1
+fi
 
 # Ensure the folder path ends with a slash
 FOLDER="${FOLDER%/}/"
