@@ -165,6 +165,7 @@ function pollStatus() {
         .then(data => {
             if (data.status === 'completed') {
                 clearInterval(pollingInterval);
+                showSpinner(false);
                 if (data.id != returnedId) {
                     throw new Error('ID mismatch');
                 }
@@ -173,12 +174,10 @@ function pollStatus() {
             }
         })
         .catch((error) => {
+            showSpinner(false);
             clearInterval(pollingInterval);
             displayResponse("Error: please retry.", false, null);
             setInputEnabled(true);
-        })
-        .finally(() => {
-            showSpinner(false);
         });
     }, 1500);
 }
