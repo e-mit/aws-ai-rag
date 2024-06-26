@@ -9,7 +9,7 @@ QUERY_K = 3
 SCORE_THRESHOLD = 0.1
 EXPIRY_PERIOD_DAYS = 8
 INDEX_NAME = "news"
-HIT_LIMIT = 6
+HIT_LIMIT = 5
 
 # LLM parameters:
 LLM_MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"

@@ -8,7 +8,6 @@ from . import params
 from . import query
 from .search import Search, DateFilteredSearch
 from .search_models import SearchHit
-
 from . import database
 from .database import LlmResponse
 
@@ -18,6 +17,21 @@ AWS_REGION = os.environ['AWS_REGION']
 logger = logging.getLogger()
 logger.setLevel(LOG_LEVEL)
 logger.debug('Starting')
+
+
+def remove_duplicate_hits(search_hits: list[SearchHit]) -> list[SearchHit]:
+    """Avoid passing duplicate articles to the LLM."""
+    url_scores: dict[str, SearchHit] = {}
+
+    for hit in search_hits:
+        k = hit.source.url.unicode_string()
+        if k in url_scores:
+            if hit.score > url_scores[k].score:
+                url_scores[k] = hit
+        else:
+            url_scores[k] = hit
+
+    return list(url_scores.values())
 
 
 def process_query(event: Any, _context_unused: Any) -> LlmResponse:
@@ -31,11 +45,13 @@ def process_query(event: Any, _context_unused: Any) -> LlmResponse:
     if not dates:
         # Do a search without date filtering
         hits = Search(event['query']).run()
+        hits = remove_duplicate_hits(hits)
     else:
         # Do a separate search for each day, and keep only the best results.
         all_hits: list[SearchHit] = []
         for day in dates:
             all_hits.extend(DateFilteredSearch(event['query'], day, day).run())
+        all_hits = remove_duplicate_hits(all_hits)
         all_hits.sort(key=lambda h: h.score, reverse=True)
         n_to_keep = min([params.QUERY_SIZE * len(dates), params.HIT_LIMIT])
         hits = all_hits[0:n_to_keep]
