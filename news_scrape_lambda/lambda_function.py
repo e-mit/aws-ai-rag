@@ -5,7 +5,6 @@ import os
 from typing import Any
 import json
 import datetime
-from datetime import timedelta
 import pathlib
 
 import requests
@@ -24,8 +23,6 @@ OPENSEARCH_URL = os.getenv('OPENSEARCH_URL', "https://example.com")
 if OPENSEARCH_URL[0:4] != 'http':
     OPENSEARCH_URL = 'https://' + OPENSEARCH_URL
 AWS_REGION = os.getenv('AWS_REGION', "eu-west-3")
-MAXIMUM_DELETE_BATCH_SIZE = 100
-DOCUMENT_EXPIRY_TIME_DAYS = int(os.getenv('DOCUMENT_EXPIRY_TIME_DAYS', '8'))
 EMBEDDING_MODEL_ID = "amazon.titan-embed-image-v1"
 EMBEDDING_DIMENSION = 1024
 INDEX_NAME = "news"
@@ -65,19 +62,6 @@ def id_is_in_database(client: OpenSearch, index: str, _id: str) -> bool:
     if nhits > 1:
         raise KeyError(f"Duplicate ID in database: {_id}")
     return nhits != 0
-
-
-def delete_old_documents(client: OpenSearch, index: str,
-                         expiry_time_days: int) -> None:
-    """Delete all expired documents from the database."""
-    expiry_timestamp = (datetime.datetime.now()
-                        - timedelta(days=expiry_time_days)).timestamp()
-    query_body_time = {
-        "size": MAXIMUM_DELETE_BATCH_SIZE,
-        "query": {"range": {"time_read": {"lt": expiry_timestamp}}}
-    }
-    client.delete_by_query(index=index, body=query_body_time,
-                           refresh=True)  # type: ignore
 
 
 def apply_embedding(embed_client, embed_model: str,
@@ -153,31 +137,21 @@ def lambda_handler(event: dict[str, Any], _context_unused: Any) -> None:
     """Define the lambda function."""
     logger.debug('Event: %s', event)
 
-    try:
-        for url_dict in sqs_event.extract(event):
-            logger.debug("Extracted url: %s", url_dict['url'])
+    for url_dict in sqs_event.extract(event):
+        logger.debug("Extracted url: %s", url_dict['url'])
 
-            time_now = datetime.datetime.now()
-            _id = f"{pathlib.Path(url_dict['url']).stem}_{time_now.date()}"
+        time_now = datetime.datetime.now()
+        _id = f"{pathlib.Path(url_dict['url']).stem}_{time_now.date()}"
 
-            response = requests.get(url_dict['url'], timeout=GET_TIMEOUT_SEC)
-            if response.status_code != 200:
-                raise ValueError("Bad status code")
+        response = requests.get(url_dict['url'], timeout=GET_TIMEOUT_SEC)
+        if response.status_code != 200:
+            raise ValueError("Bad status code")
 
-            info = scrape_news_page(url_dict['url'], response.content,
-                                    _id, time_now)
-
-            oss_client.index(
-                index=INDEX_NAME,
-                body=info,
-                id=_id,
-                refresh=True  # type: ignore
-            )
-
-    except Exception as e:
-        logger.error("Event data processing failed.")
-        logger.error(e)
-        logger.error('Event: %s', event)
-        raise e
-
-    delete_old_documents(oss_client, INDEX_NAME, DOCUMENT_EXPIRY_TIME_DAYS)
+        info = scrape_news_page(url_dict['url'], response.content,
+                                _id, time_now)
+        oss_client.index(
+            index=INDEX_NAME,
+            body=info,
+            id=_id,
+            refresh=True  # type: ignore
+        )
