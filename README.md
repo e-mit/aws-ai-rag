@@ -35,7 +35,7 @@ Using RAG (Retrieval-augmented generation) to provide an LLM with up-to-date new
     - Form a short text chunk comprising the article title and first 3 paragraphs
     - Produce a vector embedding of the text chunk using the AWS Bedrock Titan model
     - Store the article data as a document in the OpenSearch database, indexed by the embedding vector
-    - Check the OpenSearch database and delete any documents older than a chosen threshold (e.g. 5 days)
+3. A third lambda periodically deletes old documents from the OpenSearch database.
 
 
 ### Query process with RAG
