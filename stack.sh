@@ -30,6 +30,7 @@ MAIN_LAMBDA="main_scrape_lambda"
 NEWS_LAMBDA="news_scrape_lambda"
 FASTAPI_LAMBDA="fastapi_lambda"
 QUERY_LAMBDA="query_lambda"
+DELETION_LAMBDA="deletion_lambda"
 
 if [[ -z $STACK_NAME ]]; then
     echo ERROR: Please set STACK_NAME
@@ -48,12 +49,14 @@ _make_names() {
               | od -An -tx1 | tr -d ' \t\n')
     BUCKET_NAME="${STACK_NAME_LOWER}-bucket-${RAND_ID}"
     LAYER_NAME="${STACK_NAME}-layer"
-    LAMBDAS=($MAIN_LAMBDA $NEWS_LAMBDA $FASTAPI_LAMBDA $QUERY_LAMBDA)
+    LAMBDAS=($MAIN_LAMBDA $NEWS_LAMBDA $FASTAPI_LAMBDA $QUERY_LAMBDA $DELETION_LAMBDA)
 }
 
 _delete_files() {
     rm -rf main_scrape_lambda/__pycache__ news_scrape_lambda/__pycache__
+    rm -rf query_lambda/__pycache__ fastapi_lambda/__pycache__ deletion_lambda/__pycache__
     rm -f main_scrape_lambda/*.pyc news_scrape_lambda/*.pyc out.yml *.zip
+    rm -f query_lambda/*.pyc fastapi_lambda/*.pyc deletion_lambda/*.pyc
 }
 
 delete() {

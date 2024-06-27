@@ -386,3 +386,62 @@ Resources:
               - "lambda:InvokeFunction"
             Resource:
               - !GetAtt queryLambda.Arn
+
+  deletionLambdaLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      RetentionInDays: 3
+      LogGroupName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'deletion_lambda-log'
+
+  deletionLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Environment:
+        Variables:
+          OPENSEARCH_URL: !GetAtt ossDomain.DomainEndpoint
+          LOG_LEVEL: !Ref logLevel
+      FunctionName:
+        !Join
+        - '-'
+        - - !Ref "AWS::StackName"
+          - 'deletion_lambda'
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      PackageType: Zip
+      Handler: deletion_lambda.lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri:
+        Bucket: !Ref bucketName
+        Key: deletion_lambda
+      Description: Do a periodic deletion of old OSS documents
+      Timeout: !Ref timeout
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AmazonOpenSearchServiceFullAccess
+      Layers:
+        - Ref: pythonLibLayer
+      Events:
+        ScheduledEvent:
+          Type: ScheduleV2
+          Description: Repeating trigger for the Lambda at 2am every day
+          Properties:
+            State: ENABLED
+            RetryPolicy:
+              MaximumRetryAttempts: 2
+              MaximumEventAgeInSeconds: 240
+            ScheduleExpression: "cron(0 2 * * ? *)"
+            Name:
+              !Join
+              - '-'
+              - - !Ref "AWS::StackName"
+                - 'deletion_lambda-schedule'
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: !Ref deletionLambdaLog
